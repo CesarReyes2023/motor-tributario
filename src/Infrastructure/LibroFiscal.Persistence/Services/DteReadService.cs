@@ -21,7 +21,8 @@ public sealed class DteReadService : IDteReadService
         var dtos = new List<DteSummaryDto>();
         var connection = _dbContext.Database.GetDbConnection();
         var wasClosed = connection.State == System.Data.ConnectionState.Closed;
-        if (wasClosed) await connection.OpenAsync(cancellationToken);
+        if (wasClosed)
+            await connection.OpenAsync(cancellationToken);
 
         try
         {
@@ -36,28 +37,31 @@ public sealed class DteReadService : IDteReadService
             {
                 var id = reader.GetGuid(0);
                 var numeroControl = reader.GetString(1);
-                
+
                 var receptorJson = reader.IsDBNull(2) ? null : reader.GetString(2);
                 string cliente = "Consumidor Final";
                 if (!string.IsNullOrWhiteSpace(receptorJson))
                 {
-                    try {
+                    try
+                    {
                         using var doc = System.Text.Json.JsonDocument.Parse(receptorJson);
                         if (doc.RootElement.TryGetProperty("Nombre", out var nombreProp) || doc.RootElement.TryGetProperty("nombre", out nombreProp))
                             cliente = nombreProp.GetString() ?? "Consumidor Final";
-                    } catch { }
+                    }
+                    catch { }
                 }
 
                 var resumenJson = reader.IsDBNull(3) ? null : reader.GetString(3);
                 decimal totalPagar = 0;
-                
+
                 if (!string.IsNullOrWhiteSpace(resumenJson))
                 {
-                    try {
+                    try
+                    {
                         using var doc = System.Text.Json.JsonDocument.Parse(resumenJson);
                         foreach (var prop in doc.RootElement.EnumerateObject())
                         {
-                            if (string.Equals(prop.Name, "TotalPagar", StringComparison.OrdinalIgnoreCase) || 
+                            if (string.Equals(prop.Name, "TotalPagar", StringComparison.OrdinalIgnoreCase) ||
                                 string.Equals(prop.Name, "totalPagar", StringComparison.OrdinalIgnoreCase))
                             {
                                 if (prop.Value.ValueKind == System.Text.Json.JsonValueKind.String)
@@ -72,11 +76,13 @@ public sealed class DteReadService : IDteReadService
                                 break;
                             }
                         }
-                    } catch { }
+                    }
+                    catch { }
                 }
 
                 var estadoId = reader.GetInt32(4);
-                var estado = estadoId switch {
+                var estado = estadoId switch
+                {
                     1 => "Borrador",
                     2 => "Validado",
                     3 => "Firmado",
@@ -90,7 +96,7 @@ public sealed class DteReadService : IDteReadService
                 };
 
                 var selloRecepcion = reader.IsDBNull(5) ? null : reader.GetString(5);
-                
+
                 // Fetch timestamp directly
                 var fechaEmision = reader.GetFieldValue<DateTimeOffset>(6);
 
@@ -108,7 +114,8 @@ public sealed class DteReadService : IDteReadService
         }
         finally
         {
-            if (wasClosed) await connection.CloseAsync();
+            if (wasClosed)
+                await connection.CloseAsync();
         }
 
         return dtos;

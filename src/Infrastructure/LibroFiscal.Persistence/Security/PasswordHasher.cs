@@ -21,7 +21,8 @@ public sealed class PasswordHasher : IPasswordHasher
     public bool Verify(string password, string hash)
     {
         var parts = hash.Split(':');
-        if (parts.Length != 2) return false;
+        if (parts.Length != 2)
+            return false;
 
         var salt = Convert.FromBase64String(parts[0]);
         var originalHash = Convert.FromBase64String(parts[1]);

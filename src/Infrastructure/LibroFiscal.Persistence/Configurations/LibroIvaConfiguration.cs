@@ -48,7 +48,7 @@ public sealed class LibroIvaConfiguration : IEntityTypeConfiguration<LibroIva>
             periodBuilder.Property(p => p.Year)
                 .HasColumnName("FiscalYear")
                 .IsRequired();
-            
+
             periodBuilder.Property(p => p.Month)
                 .HasColumnName("FiscalMonth")
                 .IsRequired();

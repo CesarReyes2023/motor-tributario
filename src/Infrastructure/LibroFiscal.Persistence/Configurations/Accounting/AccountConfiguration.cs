@@ -12,7 +12,7 @@ internal sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
         builder.ToTable("Accounts");
 
         builder.HasKey(x => x.Id);
-        
+
         builder.Property(x => x.Id)
             .HasConversion(id => id.Value, value => AccountId.From(value));
 

@@ -12,14 +12,14 @@
         TextElement.Foreground="{DynamicResource TextPrimaryBrush}">
 
     <Grid>
-        <Border Padding="30" CornerRadius="8" Background="{DynamicResource BgPanelBrush}" 
+        <Border Padding="30" CornerRadius="8" Background="{DynamicResource BgPanelBrush}"
                 Margin="20" VerticalAlignment="Center" BorderBrush="{DynamicResource BgBorderBrush}" BorderThickness="1">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.2"/>
             </Border.Effect>
             <StackPanel>
-                
-                <TextBlock Text="Acceso Seguro" FontSize="24" FontWeight="Bold" 
+
+                <TextBlock Text="Bienvenido a el sistema de motor fiscal" FontSize="24" FontWeight="Bold"
                            HorizontalAlignment="Center" Margin="0,0,0,30" Foreground="{DynamicResource PrimaryBrush}" />
 
                 <TextBlock Text="Usuario" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5" />
@@ -35,7 +35,7 @@
                          BorderBrush="{DynamicResource BgBorderBrush}" BorderThickness="1"
                          Padding="10" Margin="0,0,0,30" FontFamily="Password" />
 
-                <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" 
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="Red"
                            TextWrapping="Wrap" Margin="0,0,0,15" HorizontalAlignment="Center"/>
 
                 <Button Command="{Binding LoginCommand}"
