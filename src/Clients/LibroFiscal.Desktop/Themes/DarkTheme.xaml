@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- COLOR PALETTE (INDIGO DARK) -->
+    <Color x:Key="C_BgApp">#0B0B0E</Color>
+    <Color x:Key="C_BgPanel">#15151B</Color>
+    <Color x:Key="C_BgHover">#1F1F28</Color>
+    <Color x:Key="C_BgBorder">#2A2A35</Color>
+    <Color x:Key="C_Primary">#6366F1</Color>
+    <Color x:Key="C_PrimaryHover">#818CF8</Color>
+    <Color x:Key="C_TextPrimary">#F8FAFC</Color>
+    <Color x:Key="C_TextSecondary">#94A3B8</Color>
+
+    <SolidColorBrush x:Key="BgAppBrush" Color="{StaticResource C_BgApp}"/>
+    <SolidColorBrush x:Key="BgPanelBrush" Color="{StaticResource C_BgPanel}"/>
+    <SolidColorBrush x:Key="BgHoverBrush" Color="{StaticResource C_BgHover}"/>
+    <SolidColorBrush x:Key="BgBorderBrush" Color="{StaticResource C_BgBorder}"/>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource C_Primary}"/>
+    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="{StaticResource C_PrimaryHover}"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource C_TextPrimary}"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource C_TextSecondary}"/>
+</ResourceDictionary>

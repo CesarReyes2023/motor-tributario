@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>LibroFiscal.Application</RootNamespace>
+    <AssemblyName>LibroFiscal.Application</AssemblyName>
+    <Description>Application layer: CQRS commands/queries, pipeline behaviors, service interfaces, DTOs. Depends on Domain and SharedKernel only.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LibroFiscal.Domain\LibroFiscal.Domain.csproj" />
+    <ProjectReference Include="..\LibroFiscal.SharedKernel\LibroFiscal.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+</Project>

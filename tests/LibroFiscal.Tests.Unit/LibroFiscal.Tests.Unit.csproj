@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>LibroFiscal.Tests.Unit</RootNamespace>
+    <AssemblyName>LibroFiscal.Tests.Unit</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <Description>Unit tests for domain logic, value objects, and application services.</Description>
+    <NoWarn>$(NoWarn);CS1591;CA1707;CA1305</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Core\LibroFiscal.SharedKernel\LibroFiscal.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\src\Core\LibroFiscal.Domain\LibroFiscal.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Core\LibroFiscal.Application\LibroFiscal.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Bogus" />
+  </ItemGroup>
+
+</Project>

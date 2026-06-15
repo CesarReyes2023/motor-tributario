@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>LibroFiscal.SharedKernel</RootNamespace>
+    <AssemblyName>LibroFiscal.SharedKernel</AssemblyName>
+    <Description>Foundation types for the LibroFiscal platform: Entity, AggregateRoot, ValueObject, Result, Specification, Guard, Domain Events.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR.Contracts" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,98 @@
+<UserControl x:Class="LibroFiscal.Desktop.Views.PurchasesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:viewmodels="clr-namespace:LibroFiscal.Desktop.ViewModels"
+             d:DataContext="{d:DesignInstance Type=viewmodels:PurchasesViewModel}"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="900"
+             Background="{DynamicResource BgAppBrush}">
+
+    <!-- Load Data on View Render -->
+    <UserControl.InputBindings>
+        <KeyBinding Key="F5" Command="{Binding LoadPurchasesCommand}"/>
+    </UserControl.InputBindings>
+    
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Section -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Libro de Compras" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                <TextBlock Text="Registro histórico de facturas, CCF y documentos recibidos" FontSize="14" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <Button Grid.Column="1" Command="{Binding LoadPurchasesCommand}" 
+                    Background="{DynamicResource PrimaryBrush}" Foreground="White" 
+                    Padding="20,10" BorderThickness="0" FontWeight="SemiBold"
+                    Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </Button.Resources>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Actualizar"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!-- Error Message -->
+        <Border Grid.Row="1" Background="#FEE2E2" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6" 
+                Padding="15" Margin="0,0,0,20">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ErrorMessage}" Value="">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ErrorMessage}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#B91C1C" FontWeight="Medium"/>
+        </Border>
+
+        <!-- DataGrid Container -->
+        <Border Grid.Row="2" Background="{DynamicResource BgPanelBrush}" CornerRadius="12" 
+                BorderBrush="{DynamicResource BgBorderBrush}" BorderThickness="1">
+            <Grid>
+                <ListView ItemsSource="{Binding Purchases}" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimaryBrush}" Margin="10">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Fecha" DisplayMemberBinding="{Binding IssueDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+                            <GridViewColumn Header="Documento" DisplayMemberBinding="{Binding DocumentNumber}" Width="120"/>
+                            <GridViewColumn Header="NIT" DisplayMemberBinding="{Binding SupplierNit}" Width="150"/>
+                            <GridViewColumn Header="Proveedor" DisplayMemberBinding="{Binding SupplierName}" Width="250"/>
+                            <GridViewColumn Header="Subtotal" DisplayMemberBinding="{Binding SubTotal, StringFormat=C2}" Width="100"/>
+                            <GridViewColumn Header="IVA" DisplayMemberBinding="{Binding TaxAmount, StringFormat=C2}" Width="100"/>
+                            <GridViewColumn Header="Total" DisplayMemberBinding="{Binding TotalAmount, StringFormat=C2}" Width="120"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <!-- Loading Overlay -->
+                <Border Background="#80000000" CornerRadius="12" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ProgressBar IsIndeterminate="True" Width="50" Height="50" Foreground="{DynamicResource PrimaryBrush}"/>
+                        <TextBlock Text="Cargando compras..." Foreground="White" Margin="0,15,0,0" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

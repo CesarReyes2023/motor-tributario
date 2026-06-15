@@ -1,0 +1,276 @@
+<UserControl x:Class="LibroFiscal.Desktop.Views.VatBooksView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:viewmodels="clr-namespace:LibroFiscal.Desktop.ViewModels"
+             d:DataContext="{d:DesignInstance Type=viewmodels:VatBooksViewModel}"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1100"
+             Background="{DynamicResource BgAppBrush}">
+             
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <StackPanel>
+                <TextBlock Text="{Binding SelectedBookType}" FontSize="32" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                <TextBlock Text="Reporte Fiscal F-07 - Detalle de Operaciones y Totales" FontSize="15" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Filters & Summary Cards -->
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Filters Card -->
+            <Border Grid.Column="0" Background="{DynamicResource BgPanelBrush}" CornerRadius="12" Padding="20" BorderBrush="{DynamicResource BgBorderBrush}" BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect Color="#0F172A" Opacity="0.04" BlurRadius="10" Direction="270" ShadowDepth="4"/>
+                </Border.Effect>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Libro:" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                    
+                    <ComboBox ItemsSource="{Binding BookTypes}" SelectedItem="{Binding SelectedBookType}" 
+                              Width="220" Margin="0,0,20,0" Padding="10,8" FontSize="14" FontWeight="Medium"
+                              Background="{DynamicResource BgAppBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BgBorderBrush}"/>
+
+                    <TextBlock Text="Período:" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                    
+                    <ComboBox ItemsSource="{Binding Months}" SelectedItem="{Binding SelectedMonth}" DisplayMemberPath="Name" 
+                              Width="140" Margin="0,0,10,0" Padding="10,8" FontSize="14" FontWeight="Medium"
+                              Background="{DynamicResource BgAppBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BgBorderBrush}"/>
+                    
+                    <ComboBox ItemsSource="{Binding Years}" SelectedItem="{Binding SelectedYear}" 
+                              Width="90" Margin="0,0,20,0" Padding="10,8" FontSize="14" FontWeight="Medium"
+                              Background="{DynamicResource BgAppBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BgBorderBrush}"/>
+                              
+                    <Button Command="{Binding GenerateReportCommand}" Style="{StaticResource PrimaryButton}" Padding="20,10" Content="Generar Reporte" Margin="0,0,10,0"/>
+                    <Button Command="{Binding ExportToCsvCommand}" Padding="20,10" Content="Exportar CSV" Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BgBorderBrush}" BorderThickness="1" Cursor="Hand" Margin="0,0,10,0">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                    <Button Command="{Binding ExportToF930Command}" Padding="20,10" Content="Anexo F930 (MH)" Background="#10B981" Foreground="White" BorderThickness="0" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Summary Cards -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <Border Background="{DynamicResource BgPanelBrush}" CornerRadius="12" Padding="20,15" Margin="0,0,15,0" BorderBrush="{DynamicResource BgBorderBrush}" BorderThickness="1" MinWidth="180">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#0F172A" Opacity="0.04" BlurRadius="10" Direction="270" ShadowDepth="4"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="TOTAL NETO OPERACIONES" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                        <TextBlock Text="{Binding TotalBase, StringFormat=C2}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="{DynamicResource BgPanelBrush}" CornerRadius="12" Padding="20,15" BorderBrush="{DynamicResource BgBorderBrush}" BorderThickness="1" MinWidth="180">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#0F172A" Opacity="0.04" BlurRadius="10" Direction="270" ShadowDepth="4"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="IMPUESTOS (CRÉDITO / DÉBITO)" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                        <TextBlock Text="{Binding TotalTaxes, StringFormat=C2}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- Error Message -->
+        <Border Grid.Row="2" Background="#FEE2E2" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,20" VerticalAlignment="Top">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ErrorMessage}" Value="">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ErrorMessage}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#B91C1C" FontWeight="Medium"/>
+        </Border>
+
+        <!-- Data Table (Libro IVA Format) -->
+        <Border Grid.Row="2" Background="{DynamicResource BgPanelBrush}" CornerRadius="12" BorderBrush="{DynamicResource BgBorderBrush}" BorderThickness="1" ClipToBounds="True">
+            <Border.Effect>
+                <DropShadowEffect Color="#0F172A" Opacity="0.04" BlurRadius="10" Direction="270" ShadowDepth="4"/>
+            </Border.Effect>
+            <Grid>
+                <!-- COMPRAS -->
+                <ListView ItemsSource="{Binding VatPurchases}" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0" Padding="10">
+                    <ListView.Style>
+                        <Style TargetType="ListView">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedBookType}" Value="Libro de Compras">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.Style>
+                    <ListView.Resources>
+                        <Style TargetType="GridViewColumnHeader">
+                            <Setter Property="Background" Value="#F8FAFC"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Padding" Value="10,12"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource BgBorderBrush}"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        </Style>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="0,8"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="BorderBrush" Value="#F1F5F9"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F8FAFC"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.Resources>
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="#" DisplayMemberBinding="{Binding RowNumber}" Width="40"/>
+                            <GridViewColumn Header="Fecha" DisplayMemberBinding="{Binding IssueDate, StringFormat=dd/MM/yyyy}" Width="90"/>
+                            <GridViewColumn Header="N° Doc" DisplayMemberBinding="{Binding DocumentNumber}" Width="110"/>
+                            <GridViewColumn Header="NIT" DisplayMemberBinding="{Binding SupplierNit}" Width="130"/>
+                            <GridViewColumn Header="Proveedor" DisplayMemberBinding="{Binding SupplierName}" Width="250"/>
+                            <GridViewColumn Header="Exentas" DisplayMemberBinding="{Binding ExemptPurchases, StringFormat=C2}" Width="100"/>
+                            <GridViewColumn Header="Internas Gravadas" DisplayMemberBinding="{Binding InternalPurchases, StringFormat=C2}" Width="120"/>
+                            <GridViewColumn Header="Crédito Fiscal" DisplayMemberBinding="{Binding TaxCredit, StringFormat=C2}" Width="110"/>
+                            <GridViewColumn Header="Total" DisplayMemberBinding="{Binding TotalPurchases, StringFormat=C2}" Width="110"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                
+                <!-- VENTAS CONTRIBUYENTES -->
+                <ListView ItemsSource="{Binding VatSalesTaxpayer}" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0" Padding="10">
+                    <ListView.Style>
+                        <Style TargetType="ListView">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedBookType}" Value="Libro de Ventas (Contribuyentes)">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.Style>
+                    <ListView.Resources>
+                        <Style TargetType="GridViewColumnHeader">
+                            <Setter Property="Background" Value="#F8FAFC"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Padding" Value="10,12"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource BgBorderBrush}"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        </Style>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="0,8"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="BorderBrush" Value="#F1F5F9"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F8FAFC"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.Resources>
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Fecha" DisplayMemberBinding="{Binding EmisionDate, StringFormat=dd/MM/yyyy}" Width="90"/>
+                            <GridViewColumn Header="N° CCF" DisplayMemberBinding="{Binding DocumentNumber}" Width="130"/>
+                            <GridViewColumn Header="NRC" DisplayMemberBinding="{Binding NrcCustomer}" Width="100"/>
+                            <GridViewColumn Header="Cliente" DisplayMemberBinding="{Binding CustomerName}" Width="250"/>
+                            <GridViewColumn Header="Ventas Exentas" DisplayMemberBinding="{Binding ExemptSales, StringFormat=C2}" Width="110"/>
+                            <GridViewColumn Header="Ventas Gravadas" DisplayMemberBinding="{Binding LocalGravadaSales, StringFormat=C2}" Width="110"/>
+                            <GridViewColumn Header="Débito Fiscal" DisplayMemberBinding="{Binding FiscalDebit, StringFormat=C2}" Width="110"/>
+                            <GridViewColumn Header="Total" DisplayMemberBinding="{Binding TotalSales, StringFormat=C2}" Width="110"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                
+                <!-- VENTAS CONSUMIDOR FINAL -->
+                <ListView ItemsSource="{Binding VatSalesConsumer}" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0" Padding="10">
+                    <ListView.Style>
+                        <Style TargetType="ListView">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedBookType}" Value="Libro de Ventas (Consumidor Final)">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.Style>
+                    <ListView.Resources>
+                        <Style TargetType="GridViewColumnHeader">
+                            <Setter Property="Background" Value="#F8FAFC"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Padding" Value="10,12"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource BgBorderBrush}"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        </Style>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="0,8"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="BorderBrush" Value="#F1F5F9"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F8FAFC"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.Resources>
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Fecha" DisplayMemberBinding="{Binding EmisionDate, StringFormat=dd/MM/yyyy}" Width="90"/>
+                            <GridViewColumn Header="Del N°" DisplayMemberBinding="{Binding InitialDocumentNumber}" Width="130"/>
+                            <GridViewColumn Header="Al N°" DisplayMemberBinding="{Binding FinalDocumentNumber}" Width="130"/>
+                            <GridViewColumn Header="Ventas Exentas" DisplayMemberBinding="{Binding ExemptSales, StringFormat=C2}" Width="120"/>
+                            <GridViewColumn Header="Ventas Gravadas" DisplayMemberBinding="{Binding LocalGravadaSales, StringFormat=C2}" Width="120"/>
+                            <GridViewColumn Header="Exportaciones" DisplayMemberBinding="{Binding ExportSales, StringFormat=C2}" Width="120"/>
+                            <GridViewColumn Header="Total Venta" DisplayMemberBinding="{Binding TotalSales, StringFormat=C2}" Width="120"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                
+                <!-- Loading -->
+                <Border Background="#99FFFFFF" CornerRadius="12" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ProgressBar IsIndeterminate="True" Width="50" Height="50" Foreground="{DynamicResource PrimaryBrush}"/>
+                        <TextBlock Text="Generando Libro de IVA..." Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,15,0,0" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

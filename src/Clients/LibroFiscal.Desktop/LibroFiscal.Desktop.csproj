@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>LibroFiscal.Desktop</RootNamespace>
+    <AssemblyName>LibroFiscal.Desktop</AssemblyName>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon />
+    <Description>WPF Desktop client for LibroFiscal — enterprise tax platform UI.</Description>
+    <!-- WPF generates code with nullable issues, suppress -->
+    <NoWarn>$(NoWarn);CA1515</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\LibroFiscal.Application\LibroFiscal.Application.csproj" />
+    <ProjectReference Include="..\..\Core\LibroFiscal.Domain\LibroFiscal.Domain.csproj" />
+    <ProjectReference Include="..\..\Core\LibroFiscal.SharedKernel\LibroFiscal.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\LibroFiscal.Persistence\LibroFiscal.Persistence.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\LibroFiscal.Integrations\LibroFiscal.Integrations.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+</Project>

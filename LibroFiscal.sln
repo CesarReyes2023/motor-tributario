@@ -1,0 +1,108 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibroFiscal.SharedKernel", "src\Core\LibroFiscal.SharedKernel\LibroFiscal.SharedKernel.csproj", "{A1000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibroFiscal.Domain", "src\Core\LibroFiscal.Domain\LibroFiscal.Domain.csproj", "{A1000002-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibroFiscal.Application", "src\Core\LibroFiscal.Application\LibroFiscal.Application.csproj", "{A1000003-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibroFiscal.Contracts", "src\Core\LibroFiscal.Contracts\LibroFiscal.Contracts.csproj", "{A1000004-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibroFiscal.Persistence", "src\Infrastructure\LibroFiscal.Persistence\LibroFiscal.Persistence.csproj", "{B1000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibroFiscal.Observability", "src\Infrastructure\LibroFiscal.Observability\LibroFiscal.Observability.csproj", "{B1000002-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibroFiscal.Tests.Architecture", "tests\LibroFiscal.Tests.Architecture\LibroFiscal.Tests.Architecture.csproj", "{C1000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibroFiscal.Tests.Unit", "tests\LibroFiscal.Tests.Unit\LibroFiscal.Tests.Unit.csproj", "{C1000002-0000-0000-0000-000000000001}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{D0000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{D0000002-0000-0000-0000-000000000001}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D0000003-0000-0000-0000-000000000001}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D0000004-0000-0000-0000-000000000001}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		.editorconfig = .editorconfig
+		global.json = global.json
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clients", "Clients", "{288F77CD-A5F4-4A8B-95BA-896B75C42066}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibroFiscal.Desktop", "src\Clients\LibroFiscal.Desktop\LibroFiscal.Desktop.csproj", "{57241252-A9E6-4D40-9108-E7BFFBCDA730}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{688D2F15-B600-471B-8E45-CD060CBFFA6F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{9C6E4926-1EAD-4BB9-A45A-FE24F1C34AE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibroFiscal.Integrations", "src\Infrastructure\LibroFiscal.Integrations\LibroFiscal.Integrations.csproj", "{360FA3A5-0A05-4221-89EC-42C4CD586251}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A1000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1000002-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1000002-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1000002-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1000002-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1000003-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1000003-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1000003-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1000003-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1000004-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1000004-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1000004-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1000004-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000002-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000002-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000002-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000002-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1000002-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1000002-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1000002-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1000002-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57241252-A9E6-4D40-9108-E7BFFBCDA730}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57241252-A9E6-4D40-9108-E7BFFBCDA730}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57241252-A9E6-4D40-9108-E7BFFBCDA730}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57241252-A9E6-4D40-9108-E7BFFBCDA730}.Release|Any CPU.Build.0 = Release|Any CPU
+		{360FA3A5-0A05-4221-89EC-42C4CD586251}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{360FA3A5-0A05-4221-89EC-42C4CD586251}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{360FA3A5-0A05-4221-89EC-42C4CD586251}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{360FA3A5-0A05-4221-89EC-42C4CD586251}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A1000001-0000-0000-0000-000000000001} = {D0000001-0000-0000-0000-000000000001}
+		{A1000002-0000-0000-0000-000000000001} = {D0000001-0000-0000-0000-000000000001}
+		{A1000003-0000-0000-0000-000000000001} = {D0000001-0000-0000-0000-000000000001}
+		{A1000004-0000-0000-0000-000000000001} = {D0000001-0000-0000-0000-000000000001}
+		{B1000001-0000-0000-0000-000000000001} = {D0000002-0000-0000-0000-000000000001}
+		{B1000002-0000-0000-0000-000000000001} = {D0000002-0000-0000-0000-000000000001}
+		{C1000001-0000-0000-0000-000000000001} = {D0000003-0000-0000-0000-000000000001}
+		{C1000002-0000-0000-0000-000000000001} = {D0000003-0000-0000-0000-000000000001}
+		{57241252-A9E6-4D40-9108-E7BFFBCDA730} = {288F77CD-A5F4-4A8B-95BA-896B75C42066}
+		{9C6E4926-1EAD-4BB9-A45A-FE24F1C34AE4} = {688D2F15-B600-471B-8E45-CD060CBFFA6F}
+		{360FA3A5-0A05-4221-89EC-42C4CD586251} = {9C6E4926-1EAD-4BB9-A45A-FE24F1C34AE4}
+	EndGlobalSection
+EndGlobal

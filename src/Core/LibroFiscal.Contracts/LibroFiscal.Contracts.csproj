@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>LibroFiscal.Contracts</RootNamespace>
+    <AssemblyName>LibroFiscal.Contracts</AssemblyName>
+    <Description>Public contracts: shared DTOs, integration events, and interfaces that cross module boundaries.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LibroFiscal.SharedKernel\LibroFiscal.SharedKernel.csproj" />
+  </ItemGroup>
+
+</Project>

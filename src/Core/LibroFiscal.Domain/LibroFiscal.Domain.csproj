@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>LibroFiscal.Domain</RootNamespace>
+    <AssemblyName>LibroFiscal.Domain</AssemblyName>
+    <Description>Core domain layer: aggregates, entities, value objects, domain events, enumerations. Zero infrastructure dependencies.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LibroFiscal.SharedKernel\LibroFiscal.SharedKernel.csproj" />
+  </ItemGroup>
+
+</Project>
