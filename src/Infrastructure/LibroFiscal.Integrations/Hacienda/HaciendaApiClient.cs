@@ -83,4 +83,84 @@ public sealed class HaciendaApiClient : IHaciendaService
     {
         return Task.FromResult(true);
     }
+
+    public async Task<Result<IEnumerable<HaciendaReceivedDte>>> QueryReceivedDtesAsync(
+        string authToken,
+        string nitReceptor,
+        DateTimeOffset startDate,
+        DateTimeOffset endDate,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Consultando metadatos DTEs recibidos para NIT {Nit} desde {Start} hasta {End}", nitReceptor, startDate, endDate);
+
+        try
+        {
+            await Task.Delay(1500, cancellationToken); // Simulación MH
+
+            var fakeDte1 = new HaciendaReceivedDte(
+                "12345678-1234-1234-1234-123456789012",
+                "DTE-03-M001-000000000000001",
+                $"SELLO-{Guid.NewGuid():N}".Substring(0, 15).ToUpperInvariant(),
+                DateTimeOffset.UtcNow.AddDays(-2),
+                "03",
+                "PROVEEDOR SIMULADO S.A. DE C.V.",
+                "06140101891011",
+                113.00m
+            );
+
+            var fakeDte2 = new HaciendaReceivedDte(
+                "87654321-4321-4321-4321-210987654321",
+                "DTE-03-M001-000000000000002",
+                $"SELLO-{Guid.NewGuid():N}".Substring(0, 15).ToUpperInvariant(),
+                DateTimeOffset.UtcNow.AddDays(-1),
+                "03",
+                "OTRO PROVEEDOR S.A.",
+                "06141212121011",
+                226.00m
+            );
+
+            var results = new List<HaciendaReceivedDte> { fakeDte1, fakeDte2 };
+            
+            _logger.LogInformation("Consulta exitosa. Se obtuvieron metadatos de {Count} DTEs", results.Count);
+            return Result.Success<IEnumerable<HaciendaReceivedDte>>(results);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al consultar metadatos DTEs en Hacienda");
+            return Result.Failure<IEnumerable<HaciendaReceivedDte>>(Error.External("Hacienda.SyncFailed", "Falló la consulta de documentos al Ministerio de Hacienda."));
+        }
+    }
+
+    public async Task<Result<string>> DownloadDteJsonAsync(
+        string authToken,
+        string codigoGeneracion,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Descargando JSON para DTE {CodigoGeneracion}", codigoGeneracion);
+
+        try
+        {
+            await Task.Delay(500, cancellationToken); // Simulación descarga
+
+            // Simular JSON del MH basado en el código
+            var monto = codigoGeneracion.StartsWith("1234", StringComparison.Ordinal) ? 113.00m : 226.00m;
+            var numControl = codigoGeneracion.StartsWith("1234", StringComparison.Ordinal) ? "DTE-03-M001-000000000000001" : "DTE-03-M001-000000000000002";
+            
+            var fakeJson = $$"""
+            {
+                "identificacion": { "version": 1, "ambiente": "00", "tipoDte": "03", "numeroControl": "{{numControl}}", "codigoGeneracion": "{{codigoGeneracion}}" },
+                "emisor": { "nit": "06140101891011", "nrc": "123456-7", "nombre": "PROVEEDOR SIMULADO S.A. DE C.V." },
+                "receptor": { "nit": "00000000000000", "nrc": "000000-0", "nombre": "NUESTRA EMPRESA S.A. DE C.V." },
+                "resumen": { "totalSujetoRetencion": 0.0, "totalIVARetenido": 0.0, "totalPagar": {{monto.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}}, "totalGravada": {{(monto / 1.13m).ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}}, "tributos": [{"codigo": "20", "descripcion": "IVA", "valor": {{(monto - (monto / 1.13m)).ToString("F2", System.Globalization.CultureInfo.InvariantCulture)}}}] }
+            }
+            """;
+            
+            return Result.Success(fakeJson);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al descargar JSON de DTE");
+            return Result.Failure<string>(Error.External("Hacienda.DownloadFailed", "Falló la descarga del DTE."));
+        }
+    }
 }

@@ -8,7 +8,7 @@ namespace LibroFiscal.Application.DteIngestion.Commands.IngestDtes;
 /// </summary>
 public record RawIngestionFile(string FileName, byte[] FileBytes);
 
-public sealed record IngestDtesCommand(IEnumerable<RawIngestionFile> Files) : ICommand<IngestionResultDto>;
+public sealed record IngestDtesCommand(System.Guid CompanyId, IEnumerable<RawIngestionFile> Files) : ICommand<IngestionResultDto>;
 
 public record IngestionResultDto(
     int TotalProcessed,

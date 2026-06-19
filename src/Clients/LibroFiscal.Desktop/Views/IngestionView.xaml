@@ -1,89 +1,365 @@
 <UserControl x:Class="LibroFiscal.Desktop.Views.IngestionView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewmodels="clr-namespace:LibroFiscal.Desktop.ViewModels"
              d:DataContext="{d:DesignInstance Type=viewmodels:IngestionViewModel}"
-             mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800"
-             Background="White">
-    
-    <Grid Margin="20">
+             mc:Ignorable="d" d:DesignHeight="720" d:DesignWidth="1020">
+
+    <Grid Margin="36,32,36,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <TextBlock Grid.Row="0" Text="Ingesta Masiva de Facturas" FontSize="28" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,10"/>
-        <TextBlock Grid.Row="1" Text="Arrastra y suelta tus archivos JSON de Hacienda o imágenes escaneadas." FontSize="14" Foreground="#6B7280" Margin="0,0,0,20"/>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="3" Height="28" CornerRadius="2"
+                            Background="{DynamicResource VioletBrush}"
+                            Margin="0,0,12,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Ingesta Masiva" Style="{StaticResource TextH1}"/>
+                </StackPanel>
+                <TextBlock Text="IMPORTACIÓN MASIVA DE DOCUMENTOS DTE"
+                           FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"
+                           Margin="15,6,0,0"/>
+            </StackPanel>
 
-        <!-- Drag & Drop Zone -->
-        <Border Grid.Row="2" BorderBrush="#3B82F6" BorderThickness="2" CornerRadius="10" Background="#EFF6FF" AllowDrop="True" Drop="Border_Drop">
+            <!-- Status indicator -->
+            <Border Grid.Column="1" Background="{DynamicResource BgCardBrush}"
+                    BorderBrush="{DynamicResource BgBorderBrush}"
+                    BorderThickness="1" CornerRadius="20" Padding="14,6">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="8" Height="8"
+                             Fill="{DynamicResource EmeraldBrush}"
+                             VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="{Binding StatusMessage}"
+                               FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"
+                               VerticalAlignment="Center" MaxWidth="300"
+                               TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- TabControl premium -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource BgCardBrush}"
+                BorderBrush="{DynamicResource BgBorderBrush}"
+                BorderThickness="1" CornerRadius="10" ClipToBounds="True">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>   <!-- Tab headers -->
+                    <RowDefinition Height="*"/>      <!-- Content -->
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,30,0,10">
-                    <TextBlock Text="📁" FontSize="64" HorizontalAlignment="Center" Foreground="#93C5FD"/>
-                    <TextBlock Text="{Binding StatusMessage}" FontSize="18" FontWeight="Medium" Foreground="#1E40AF" HorizontalAlignment="Center" Margin="0,10,0,0"/>
-                </StackPanel>
+                <!-- Custom tab headers -->
+                <Border Grid.Row="0"
+                        Background="{DynamicResource BgHoverBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal" Margin="14,0">
+                        <!-- Using TabControl internally but styling with RadioButtons in the tab headers -->
+                    </StackPanel>
+                </Border>
 
-                <!-- DataGrid for Dropped Files -->
-                <DataGrid Grid.Row="1" ItemsSource="{Binding FilesToProcess}" AutoGenerateColumns="False" 
-                          CanUserAddRows="False" IsReadOnly="True" Background="Transparent" BorderThickness="0"
-                          HeadersVisibility="Column" Margin="10">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Archivo" Binding="{Binding FileName}" Width="*"/>
-                        <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="150">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Status}" Value="Procesado">
-                                            <Setter Property="Foreground" Value="#10B981"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding Status}" Value="Pendiente">
-                                            <Setter Property="Foreground" Value="#F59E0B"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding Status}" Value="Error">
-                                            <Setter Property="Foreground" Value="#EF4444"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <!-- Tab content using real TabControl -->
+                <TabControl Grid.Row="0" Grid.RowSpan="2"
+                            Background="Transparent" BorderThickness="0">
+                    <TabControl.Resources>
+                        <Style TargetType="TabItem">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+                            <Setter Property="FontSize" Value="13"/>
+                            <Setter Property="Padding" Value="18,12"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TabItem">
+                                        <Border x:Name="Root" Background="Transparent"
+                                                BorderThickness="0,0,0,2"
+                                                BorderBrush="Transparent"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter ContentSource="Header"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource BgHoverBrush}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabControl.Resources>
+
+                    <!-- Tab 1: Archivos locales -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource Icon_Upload}"
+                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"
+                                      Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0"/>
+                                <TextBlock Text="Archivos Locales"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                            </StackPanel>
+                        </TabItem.Header>
+
+                        <Grid Margin="24">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="14"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="14"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="14"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Drop Zone -->
+                            <Border Grid.Row="0"
+                                    BorderBrush="{DynamicResource BgBorderBrush}"
+                                    BorderThickness="2" CornerRadius="10"
+                                    Background="{DynamicResource BgHoverBrush}"
+                                    AllowDrop="True" Drop="Border_Drop"
+                                    MinHeight="120">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                <Setter Property="Background" Value="{DynamicResource BgActiveBrush}"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Margin="20" Cursor="Hand">
+                                    <Border Width="48" Height="48" CornerRadius="24"
+                                            Background="{DynamicResource BgCardBrush}"
+                                            HorizontalAlignment="Center" Margin="0,0,0,12">
+                                        <Path Data="{StaticResource Icon_Upload}"
+                                              Fill="{DynamicResource TextMutedBrush}"
+                                              Width="22" Height="22" Stretch="Uniform"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Text="Arrastra archivos .json aquí"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="o usa el botón para seleccionar una carpeta"
+                                               FontSize="12" Foreground="{DynamicResource TextMutedBrush}"
+                                               HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Toolbar row -->
+                            <StackPanel Grid.Row="2" Orientation="Horizontal">
+                                <Button Command="{Binding SelectFolderCommand}"
+                                        Style="{StaticResource OutlineButton}"
+                                        Padding="14,9" Margin="0,0,10,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource Icon_Filter}"
+                                              Fill="{DynamicResource TextSecondaryBrush}"
+                                              Width="13" Height="13" Stretch="Uniform"/>
+                                        <TextBlock Text="Seleccionar Carpeta" Margin="8,0,0,0"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   FontSize="12"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding ClearFilesCommand}"
+                                        Style="{StaticResource OutlineButton}"
+                                        Padding="14,9">
+                                    <TextBlock Text="Limpiar" FontSize="12"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                </Button>
+                            </StackPanel>
+
+                            <!-- Files list -->
+                            <Border Grid.Row="4"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                    BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                                <DataGrid ItemsSource="{Binding FilesToProcess}"
+                                          IsReadOnly="True" VerticalScrollBarVisibility="Auto">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="ARCHIVO" Width="*"
+                                                            Binding="{Binding FileName}">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource TextMono}">
+                                                    <Setter Property="Margin" Value="16,0"/>
+                                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    <Setter Property="FontSize" Value="12"/>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTextColumn Header="ESTADO" Width="120"
+                                                            Binding="{Binding Status}">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Margin" Value="16,0"/>
+                                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    <Setter Property="FontSize" Value="12"/>
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Procesado">
+                                                            <Setter Property="Foreground" Value="{DynamicResource EmeraldBrush}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Pendiente">
+                                                            <Setter Property="Foreground" Value="{DynamicResource AmberBrush}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Error">
+                                                            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Border>
+
+                            <!-- Process button -->
+                            <Button Grid.Row="6"
+                                    Command="{Binding ProcessFilesCommand}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Height="46" HorizontalAlignment="Right" Padding="24,0"
+                                    IsEnabled="{Binding IsProcessing, Converter={StaticResource InverseBooleanConverter}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource Icon_Upload}"
+                                          Fill="White" Width="14" Height="14" Stretch="Uniform"/>
+                                    <TextBlock Text="Procesar y Guardar" Margin="10,0,0,0" Foreground="White"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </TabItem>
+
+                    <!-- Tab 2: Buzón Hacienda -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="7" Height="7" Fill="{DynamicResource EmeraldBrush}"
+                                         VerticalAlignment="Center" Margin="0,0,7,0"/>
+                                <TextBlock Text="Buzón Hacienda"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                            </StackPanel>
+                        </TabItem.Header>
+
+                        <Grid Margin="24">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="16"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="16"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Filtros -->
+                            <Border Grid.Row="0"
+                                    Background="{DynamicResource BgHoverBrush}"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                    BorderThickness="1" CornerRadius="8" Padding="16,12">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="DESDE:" Style="{StaticResource TextLabel}"
+                                               VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <DatePicker SelectedDate="{Binding SyncStartDate}"
+                                                Height="36" Margin="0,0,20,0"/>
+                                    <TextBlock Text="HASTA:" Style="{StaticResource TextLabel}"
+                                               VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <DatePicker SelectedDate="{Binding SyncEndDate}"
+                                                Height="36" Margin="0,0,20,0"/>
+                                    <Button Command="{Binding FetchFromHaciendaCommand}"
+                                            Style="{StaticResource PrimaryButton}"
+                                            Padding="18,9">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Data="{StaticResource Icon_Refresh}"
+                                                  Fill="White" Width="13" Height="13" Stretch="Uniform"/>
+                                            <TextBlock Text="Consultar MH" Margin="8,0,0,0" Foreground="White" FontSize="12"/>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- DataGrid buzón -->
+                            <Border Grid.Row="2"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                    BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                                <DataGrid ItemsSource="{Binding BuzonDtes}"
+                                          VerticalScrollBarVisibility="Auto">
+                                    <DataGrid.Columns>
+                                        <DataGridCheckBoxColumn Header="" Width="50"
+                                                                Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <DataGridTextColumn Header="FECHA" Width="100"
+                                                            Binding="{Binding FechaEmision, StringFormat=dd/MM/yyyy}"
+                                                            IsReadOnly="True">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource TextMono}">
+                                                    <Setter Property="Margin" Value="12,0"/>
+                                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    <Setter Property="FontSize" Value="11"/>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTextColumn Header="EMISOR" Width="*"
+                                                            Binding="{Binding NombreEmisor}" IsReadOnly="True">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Margin" Value="12,0"/>
+                                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTextColumn Header="N° CONTROL" Width="200"
+                                                            Binding="{Binding NumeroControl}" IsReadOnly="True">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource TextMono}">
+                                                    <Setter Property="Margin" Value="12,0"/>
+                                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    <Setter Property="FontSize" Value="11"/>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTextColumn Header="MONTO" Width="110"
+                                                            Binding="{Binding MontoTotal, StringFormat=C2}" IsReadOnly="True">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource TextMono}">
+                                                    <Setter Property="Margin" Value="12,0"/>
+                                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource EmeraldBrush}"/>
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                    <Setter Property="TextAlignment" Value="Right"/>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Border>
+
+                            <!-- Import button -->
+                            <Button Grid.Row="4"
+                                    Command="{Binding ImportSelectedFromHaciendaCommand}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Height="46" HorizontalAlignment="Right" Padding="24,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource Icon_Export}"
+                                          Fill="White" Width="14" Height="14" Stretch="Uniform"/>
+                                    <TextBlock Text="Importar Seleccionados" Margin="10,0,0,0" Foreground="White"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
             </Grid>
         </Border>
-
-        <!-- Actions -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-            <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Margin="0,0,20,0" Foreground="#6B7280" FontStyle="Italic"/>
-            
-            <Button Content="Limpiar" Command="{Binding ClearFilesCommand}" Background="#F3F4F6" Foreground="#374151" 
-                    Padding="20,10" FontWeight="SemiBold" BorderThickness="0" Margin="0,0,10,0">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="5"/>
-                    </Style>
-                </Button.Resources>
-            </Button>
-
-            <Button Content="Procesar y Guardar" Command="{Binding ProcessFilesCommand}" Background="#10B981" Foreground="White" 
-                    Padding="20,10" FontWeight="SemiBold" BorderThickness="0">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="5"/>
-                    </Style>
-                </Button.Resources>
-            </Button>
-        </StackPanel>
     </Grid>
 </UserControl>

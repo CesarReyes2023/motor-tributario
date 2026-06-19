@@ -8,14 +8,28 @@ using System.Windows;
 
 namespace LibroFiscal.Desktop.ViewModels;
 
-public partial class PurchasesViewModel : ObservableObject
+public partial class PurchasesViewModel : ObservableObject, IDisposable
 {
     private readonly IMediator _mediator;
+    private readonly LibroFiscal.Application.Abstractions.Services.IEmpresaActivaService _empresaActivaService;
 
-    public PurchasesViewModel(IMediator mediator)
+    public PurchasesViewModel(
+        IMediator mediator,
+        LibroFiscal.Application.Abstractions.Services.IEmpresaActivaService empresaActivaService)
     {
         _mediator = mediator;
+        _empresaActivaService = empresaActivaService;
         Purchases = new ObservableCollection<PurchaseDto>();
+        
+        _empresaActivaService.EmpresaCambiadaEvent += OnEmpresaCambiada;
+    }
+
+    private void OnEmpresaCambiada(object? sender, Guid e) => _ = LoadPurchasesAsync();
+
+    public void Dispose()
+    {
+        _empresaActivaService.EmpresaCambiadaEvent -= OnEmpresaCambiada;
+        GC.SuppressFinalize(this);
     }
 
     [ObservableProperty]
@@ -31,6 +45,9 @@ public partial class PurchasesViewModel : ObservableObject
     public async Task LoadPurchasesAsync()
     {
         if (IsLoading) return;
+        
+        var companyId = _empresaActivaService.EmpresaActualId;
+        if (companyId == null) return;
 
         IsLoading = true;
         ErrorMessage = string.Empty;
@@ -38,7 +55,7 @@ public partial class PurchasesViewModel : ObservableObject
 
         try
         {
-            var result = await _mediator.Send(new GetPurchasesQuery());
+            var result = await _mediator.Send(new GetPurchasesQuery(companyId.Value));
 
             if (result.IsSuccess)
             {

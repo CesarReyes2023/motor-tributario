@@ -2,7 +2,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LibroFiscal.Application.DTE.Commands.CreateDte;
@@ -13,6 +12,9 @@ namespace LibroFiscal.Desktop.ViewModels;
 public partial class CreateDteViewModel : ObservableObject
 {
     private readonly IMediator _mediator;
+    private readonly LibroFiscal.Application.Abstractions.Services.IEmpresaActivaService _empresaActivaService;
+    private readonly LibroFiscal.Application.Abstractions.Services.IDialogService _dialogService;
+    private readonly LibroFiscal.Application.Abstractions.Services.IErrorLogger _errorLogger;
 
     [ObservableProperty]
     private string _receptorNombre = string.Empty;
@@ -47,10 +49,17 @@ public partial class CreateDteViewModel : ObservableObject
     [ObservableProperty]
     private bool _isBusy;
 
-    public CreateDteViewModel(IMediator mediator)
+    public CreateDteViewModel(
+        IMediator mediator,
+        LibroFiscal.Application.Abstractions.Services.IEmpresaActivaService empresaActivaService,
+        LibroFiscal.Application.Abstractions.Services.IDialogService dialogService,
+        LibroFiscal.Application.Abstractions.Services.IErrorLogger errorLogger)
     {
         _mediator = mediator;
-        Items.CollectionChanged += (s, e) => RecalcularTotales();
+        _empresaActivaService = empresaActivaService;
+        _dialogService = dialogService;
+        _errorLogger = errorLogger;
+        Items.CollectionChanged += (s, e) => _ = RecalcularTotalesAsync();
     }
 
     [RelayCommand]
@@ -58,7 +67,7 @@ public partial class CreateDteViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(NuevoItemDescripcion) || NuevoItemCantidad <= 0 || NuevoItemPrecio <= 0)
         {
-            MessageBox.Show("Debe ingresar descripción, cantidad y precio.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialogService.ShowWarning("Debe ingresar descripción, cantidad y precio.");
             return;
         }
 
@@ -81,7 +90,7 @@ public partial class CreateDteViewModel : ObservableObject
         NuevoItemPrecio = 0;
     }
 
-    private async void RecalcularTotales()
+    private async Task RecalcularTotalesAsync()
     {
         SubTotal = Items.Sum(i => i.Cantidad * i.PrecioUnitario);
         
@@ -111,7 +120,14 @@ public partial class CreateDteViewModel : ObservableObject
     {
         if (Items.Count == 0)
         {
-            MessageBox.Show("Debe agregar al menos un ítem a la factura.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialogService.ShowWarning("Debe agregar al menos un ítem a la factura.");
+            return;
+        }
+
+        var companyId = _empresaActivaService.EmpresaActualId;
+        if (companyId == null)
+        {
+            _dialogService.ShowError("No hay ninguna empresa activa. Seleccione una empresa primero.");
             return;
         }
 
@@ -120,6 +136,15 @@ public partial class CreateDteViewModel : ObservableObject
 
         try
         {
+            // Cargar perfil de la empresa activa para datos del emisor
+            var profileResult = await _mediator.Send(new LibroFiscal.Application.Companies.Queries.GetCompanyProfile.GetCompanyProfileQuery(companyId.Value));
+            if (profileResult.IsFailure || profileResult.Value == null)
+            {
+                _dialogService.ShowError("No se pudo cargar el perfil de la empresa activa.");
+                return;
+            }
+            var profile = profileResult.Value;
+
             // Construir Resumen
             var resumen = new DteResumenDto(
                 TotalGravada: SubTotal,
@@ -133,21 +158,21 @@ public partial class CreateDteViewModel : ObservableObject
                 CondicionOperacionId: 1 // Contado
             );
 
-            // Mock Emisor para el MVP
+            // Emisor con datos reales de la empresa activa
             var emisor = new DteEmisorDto(
-                Nit: "0614-010101-101-1",
-                Nrc: "123456-7",
-                Nombre: "Cesar Reyes",
-                NombreComercial: "Cesar Reyes",
-                CodigoActividad: "62011",
-                DescripcionActividad: "Desarrollo de software",
-                Telefono: "2222-2222",
-                Correo: "contacto@cesarreyes.com",
+                Nit: profile.Nit,
+                Nrc: profile.Nrc,
+                Nombre: profile.LegalName,
+                NombreComercial: profile.TradeName,
+                CodigoActividad: profile.EconomicActivityCode,
+                DescripcionActividad: profile.EconomicActivityDescription,
+                Telefono: profile.Phone,
+                Correo: profile.Email,
                 CodigoEstablecimiento: "0000",
                 PuntoVenta: "0000",
-                Departamento: "San Salvador",
-                Municipio: "San Salvador",
-                ComplementoDireccion: "Colonia Escalón"
+                Departamento: profile.Department,
+                Municipio: profile.Municipality,
+                ComplementoDireccion: profile.AddressLine
             );
 
             var receptor = new DteReceptorDto(
@@ -165,13 +190,16 @@ public partial class CreateDteViewModel : ObservableObject
                 TipoDocumento: null
             );
 
+            // Correlativo secuencial basado en timestamp (seguro contra duplicados dentro de un segundo)
+            var correlativo = int.Parse(DateTimeOffset.UtcNow.ToString("HHmmssfff", System.Globalization.CultureInfo.InvariantCulture), System.Globalization.CultureInfo.InvariantCulture);
+
             var command = new CreateDteCommand(
-                CompanyId: Guid.NewGuid(), // En un caso real vendría del Auth o del CompanyService
+                CompanyId: companyId.Value,
                 TipoDteId: 1, // Factura
                 Version: 1,
                 NumeroControlCodigo: "03",
                 NumeroControlPuntoVenta: "000",
-                NumeroControlCorrelativo: new Random().Next(1000, 9999),
+                NumeroControlCorrelativo: correlativo,
                 FechaEmision: DateTimeOffset.UtcNow,
                 Emisor: emisor,
                 Receptor: receptor,
@@ -186,20 +214,20 @@ public partial class CreateDteViewModel : ObservableObject
 
             if (result.IsSuccess)
             {
-                MessageBox.Show($"DTE emitido exitosamente.\nID: {result.Value}", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                _dialogService.ShowInfo($"DTE emitido exitosamente.\nID: {result.Value}", "Éxito");
                 Items.Clear();
                 ReceptorNombre = string.Empty;
                 ReceptorNit = string.Empty;
             }
             else
             {
-                MessageBox.Show($"Error al emitir DTE: {result.Error.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _dialogService.ShowError($"Error al emitir DTE: {result.Error.Message}");
             }
         }
         catch (Exception ex)
         {
-            System.IO.File.WriteAllText("error_dte.txt", ex.ToString());
-            MessageBox.Show($"Ocurrió un error inesperado (revisa error_dte.txt para detalles): {ex.Message}", "Error Crítico", MessageBoxButton.OK, MessageBoxImage.Error);
+            _errorLogger.LogError("dte_emit", ex);
+            _dialogService.ShowError($"Ocurrió un error inesperado: {ex.Message}", "Error Crítico");
         }
         finally
         {

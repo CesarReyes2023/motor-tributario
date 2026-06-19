@@ -123,6 +123,13 @@ namespace LibroFiscal.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("AmbienteId");
 
+                    b.Property<string>("ApiPassword")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasDefaultValue("");
+
                     b.Property<string>("CodigoActividad")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -155,6 +162,10 @@ namespace LibroFiscal.Persistence.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("LogoPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("NombreComercial")
                         .IsRequired()
@@ -468,7 +479,7 @@ namespace LibroFiscal.Persistence.Migrations
                         {
                             Id = new Guid("a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1"),
                             Code = "IVA",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 6, 15, 3, 24, 49, 417, DateTimeKind.Unspecified).AddTicks(1142), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 6, 19, 3, 1, 35, 900, DateTimeKind.Unspecified).AddTicks(7212), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "System",
                             IsActive = true,
                             Name = "Impuesto al Valor Agregado",
@@ -479,7 +490,7 @@ namespace LibroFiscal.Persistence.Migrations
                         {
                             Id = new Guid("b2b2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2"),
                             Code = "RET_1",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 6, 15, 3, 24, 49, 417, DateTimeKind.Unspecified).AddTicks(1157), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 6, 19, 3, 1, 35, 900, DateTimeKind.Unspecified).AddTicks(7220), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "System",
                             IsActive = false,
                             Name = "Retención Gran Contribuyente",
@@ -500,6 +511,10 @@ namespace LibroFiscal.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
+
+                    b.Property<string>("ProfilePicturePath")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer")
@@ -600,14 +615,14 @@ namespace LibroFiscal.Persistence.Migrations
 
                             b1.Property<string>("Departamento")
                                 .IsRequired()
-                                .HasMaxLength(2)
-                                .HasColumnType("character varying(2)")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
                                 .HasColumnName("Departamento");
 
                             b1.Property<string>("Municipio")
                                 .IsRequired()
-                                .HasMaxLength(2)
-                                .HasColumnType("character varying(2)")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
                                 .HasColumnName("Municipio");
 
                             b1.HasKey("CompanyId");
@@ -649,14 +664,14 @@ namespace LibroFiscal.Persistence.Migrations
 
                             b1.Property<string>("Departamento")
                                 .IsRequired()
-                                .HasMaxLength(2)
-                                .HasColumnType("character varying(2)")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
                                 .HasColumnName("Departamento");
 
                             b1.Property<string>("Municipio")
                                 .IsRequired()
-                                .HasMaxLength(2)
-                                .HasColumnType("character varying(2)")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
                                 .HasColumnName("Municipio");
 
                             b1.HasKey("EstablishmentId");

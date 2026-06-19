@@ -6,17 +6,20 @@
         xmlns:viewmodels="clr-namespace:LibroFiscal.Desktop.ViewModels"
         xmlns:views="clr-namespace:LibroFiscal.Desktop.Views"
         mc:Ignorable="d"
-        Title="LibroFiscal" Height="720" Width="1180"
+        Title="LibroFiscal — Engine Fiscal" Height="780" Width="1280"
+        MinHeight="640" MinWidth="1100"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BgAppBrush}"
         Foreground="{DynamicResource TextPrimaryBrush}">
 
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="32" ResizeBorderThickness="6" CornerRadius="0" GlassFrameThickness="1" UseAeroCaptionButtons="False"/>
+        <WindowChrome CaptionHeight="38" ResizeBorderThickness="6"
+                      CornerRadius="0" GlassFrameThickness="1"
+                      UseAeroCaptionButtons="False"/>
     </WindowChrome.WindowChrome>
 
     <Window.Resources>
-        <!-- DataTemplates for MVVM Routing -->
+        <!-- ViewModel → View routing -->
         <DataTemplate DataType="{x:Type viewmodels:DashboardViewModel}">
             <views:DashboardView/>
         </DataTemplate>
@@ -41,33 +44,65 @@
         <DataTemplate DataType="{x:Type viewmodels:IngestionViewModel}">
             <views:IngestionView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:SettingsViewModel}">
+            <views:SettingsView/>
+        </DataTemplate>
 
-        <Style x:Key="NavButtonStyle" TargetType="RadioButton">
+        <!-- NAV BUTTON — Custom RadioButton as nav item -->
+        <Style x:Key="NavItem" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Medium"/>
-            <Setter Property="Padding" Value="20,12"/>
-            <Setter Property="Margin" Value="10,2"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Regular"/>
+            <Setter Property="Margin" Value="12,1"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <!-- Add Command property forwarding to internal ButtonBase -->
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="Border" Background="{TemplateBinding Background}" CornerRadius="6">
-                            <StackPanel Orientation="Horizontal" Margin="{TemplateBinding Padding}">
-                                <Path x:Name="Icon" Data="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" 
-                                      Fill="{TemplateBinding Foreground}" Width="18" Height="18" Stretch="Uniform"/>
-                                <TextBlock Text="{TemplateBinding Content}" Margin="15,0,0,0" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Active indicator bar (left) -->
+                            <Border x:Name="ActiveBar"
+                                    Grid.Column="0"
+                                    Background="{DynamicResource PrimaryBrush}"
+                                    CornerRadius="0,2,2,0"
+                                    Visibility="Collapsed"/>
+
+                            <!-- Item content -->
+                            <Border x:Name="Bg"
+                                    Grid.Column="1"
+                                    Background="Transparent"
+                                    CornerRadius="6"
+                                    Margin="4,0,4,0"
+                                    Padding="12,10">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path x:Name="Icon"
+                                          Data="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                                          Fill="{TemplateBinding Foreground}"
+                                          Width="16" Height="16"
+                                          Stretch="Uniform"
+                                          VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="Label"
+                                               Text="{TemplateBinding Content}"
+                                               Margin="12,0,0,0"
+                                               VerticalAlignment="Center"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontWeight="{TemplateBinding FontWeight}"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource BgHoverBrush}"/>
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource BgHoverBrush}"/>
                                 <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#1A6366F1"/> <!-- 10% opacity primary -->
+                                <Setter TargetName="ActiveBar" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource BgActiveBrush}"/>
                                 <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
@@ -76,103 +111,282 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- NAV GROUP LABEL -->
+        <Style x:Key="NavGroupLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+            <Setter Property="Margin" Value="28,20,0,6"/>
+        </Style>
     </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="32"/> <!-- TitleBar -->
-            <RowDefinition Height="*"/>  <!-- Main Content -->
+            <RowDefinition Height="38"/>   <!-- Custom TitleBar -->
+            <RowDefinition Height="*"/>    <!-- Shell -->
         </Grid.RowDefinitions>
 
-        <!-- TITLE BAR -->
-        <Grid Grid.Row="0" Background="{DynamicResource BgAppBrush}" Panel.ZIndex="10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            
-            <!-- App Icon & Title -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="15,0,0,0" VerticalAlignment="Center">
-                <Path Data="{StaticResource Icon_Dashboard}" Fill="{DynamicResource PrimaryBrush}" Width="14" Height="14" Stretch="Uniform"/>
-                <TextBlock Text="LibroFiscal" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" FontWeight="SemiBold" Margin="10,0,0,0"/>
-            </StackPanel>
+        <!-- ════════════════════════════════════════════════════════════ -->
+        <!-- CUSTOM TITLE BAR                                             -->
+        <!-- ════════════════════════════════════════════════════════════ -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource BgVoidBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                BorderThickness="0,0,0,1"
+                Panel.ZIndex="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>   <!-- Logo -->
+                    <ColumnDefinition Width="*"/>      <!-- Drag area / Empresa -->
+                    <ColumnDefinition Width="Auto"/>   <!-- Window controls -->
+                </Grid.ColumnDefinitions>
 
-            <!-- Window Controls -->
-            <StackPanel Grid.Column="2" Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
-                <Button Style="{StaticResource TitleBarButton}" Click="BtnMinimize_Click">
-                    <Path Data="{StaticResource Icon_Minimize}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="10" Height="10" Stretch="Uniform"/>
-                </Button>
-                <Button Style="{StaticResource TitleBarButton}" Click="BtnMaximize_Click">
-                    <Path Data="{StaticResource Icon_Maximize}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="10" Height="10" Stretch="Uniform"/>
-                </Button>
-                <Button Style="{StaticResource TitleBarCloseButton}" Click="BtnClose_Click">
-                    <Path Data="{StaticResource Icon_Close}" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="10" Height="10" Stretch="Uniform"/>
-                </Button>
-            </StackPanel>
-        </Grid>
+                <!-- Logo wordmark -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal"
+                            Margin="16,0,0,0" VerticalAlignment="Center">
+                    <Border Width="20" Height="20" CornerRadius="4"
+                            Background="{DynamicResource PrimaryBrush}">
+                        <Path Data="{StaticResource Icon_Dashboard}"
+                              Fill="{DynamicResource TextInverseBrush}"
+                              Width="11" Height="11"
+                              Stretch="Uniform"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="ENGINE" FontSize="12" FontWeight="Bold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               Margin="8,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="FISCAL" FontSize="12" FontWeight="Bold"
+                               Foreground="{DynamicResource PrimaryBrush}"
+                               Margin="4,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
 
-        <!-- LAYOUT -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            WindowChrome.IsHitTestVisibleInChrome="True">
+
+                    <!-- "Workspace" pill -->
+                    <Border Background="{DynamicResource BgPanelBrush}"
+                            BorderBrush="{DynamicResource BgBorderBrush}"
+                            BorderThickness="1" CornerRadius="16" Padding="10,4">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="{DynamicResource EmeraldBrush}"
+                                     VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Empresa:" FontSize="11"
+                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <ComboBox MinWidth="200" Height="24"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      Foreground="{DynamicResource TextPrimaryBrush}"
+                                      ItemsSource="{Binding Companies}"
+                                      DisplayMemberPath="TradeName"
+                                      SelectedItem="{Binding SelectedCompany, Mode=TwoWay}"
+                                      FontSize="12" FontWeight="SemiBold"
+                                      VerticalContentAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Window controls -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal"
+                            WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button Style="{StaticResource TitleBarButton}" Click="BtnMinimize_Click">
+                        <Path Data="{StaticResource Icon_Minimize}"
+                              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                              Width="12" Height="12" Stretch="Uniform"/>
+                    </Button>
+                    <Button Style="{StaticResource TitleBarButton}" Click="BtnMaximize_Click">
+                        <Path Data="{StaticResource Icon_Maximize}"
+                              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                              Width="12" Height="12" Stretch="Uniform"/>
+                    </Button>
+                    <Button Style="{StaticResource TitleBarCloseButton}" Click="BtnClose_Click">
+                        <Path Data="{StaticResource Icon_Close}"
+                              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                              Width="10" Height="10" Stretch="Uniform"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ════════════════════════════════════════════════════════════ -->
+        <!-- MAIN SHELL                                                   -->
+        <!-- ════════════════════════════════════════════════════════════ -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="260"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="240"/>   <!-- Sidebar -->
+                <ColumnDefinition Width="*"/>     <!-- Content -->
             </Grid.ColumnDefinitions>
 
-            <!-- SIDEBAR -->
-            <Border Grid.Column="0" Background="{DynamicResource BgAppBrush}" BorderBrush="{DynamicResource BgBorderBrush}" BorderThickness="0,1,1,0">
+            <!-- ═══ SIDEBAR ═══ -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource BgSidebarBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    BorderThickness="0,0,1,0">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>   <!-- User profile -->
+                        <RowDefinition Height="*"/>      <!-- Nav items -->
+                        <RowDefinition Height="Auto"/>   <!-- Footer -->
                     </Grid.RowDefinitions>
 
-                    <!-- User Profile -->
-                    <Border Grid.Row="0" Margin="20,20,20,30" Background="{DynamicResource BgPanelBrush}" CornerRadius="8" BorderBrush="{DynamicResource BgBorderBrush}" BorderThickness="1" Padding="15">
+                    <!-- User profile card -->
+                    <Border Grid.Row="0" Margin="14,14,14,10"
+                            Background="{DynamicResource BgCardBrush}"
+                            BorderBrush="{DynamicResource BgBorderBrush}"
+                            BorderThickness="1" CornerRadius="8" Padding="12">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Ellipse Grid.Column="0" Width="36" Height="36" Fill="{DynamicResource PrimaryBrush}"/>
-                            <TextBlock Grid.Column="0" Text="CR" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="Cesar Reyes" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                <TextBlock Text="Premium Plan" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0"/>
+
+                            <!-- Avatar -->
+                            <Border Grid.Column="0" Width="36" Height="36"
+                                    CornerRadius="18" ClipToBounds="True">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#00D4FF" Offset="0"/>
+                                        <GradientStop Color="#8B5CF6" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Grid>
+                                    <TextBlock Text="CR" Foreground="White"
+                                               FontWeight="Bold" FontSize="13"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                    <Image Source="{Binding ProfilePicturePath}" Stretch="UniformToFill">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ProfilePicturePath}" Value="">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding ProfilePicturePath}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+                                </Grid>
+                            </Border>
+
+                            <!-- Info -->
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding CurrentUserName}"
+                                           FontWeight="SemiBold" FontSize="13"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                    <Ellipse Width="6" Height="6"
+                                             Fill="{DynamicResource EmeraldBrush}"
+                                             VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <TextBlock Text="Enterprise" FontSize="10"
+                                               Foreground="{DynamicResource TextMutedBrush}"/>
+                                </StackPanel>
                             </StackPanel>
+
+                            <!-- Settings icon -->
+                            <Button Grid.Column="2" Style="{StaticResource IconButton}"
+                                    Command="{Binding NavigateCommand}" CommandParameter="Settings"
+                                    VerticalAlignment="Center" Padding="5">
+                                <Path Data="{StaticResource Icon_Settings}"
+                                      Fill="{DynamicResource TextMutedBrush}"
+                                      Width="14" Height="14" Stretch="Uniform"/>
+                            </Button>
                         </Grid>
                     </Border>
 
                     <!-- Navigation -->
-                    <StackPanel Grid.Row="1">
-                        <TextBlock Text="MENU PRINCIPAL" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Margin="25,0,0,10"/>
-                        <RadioButton Content="Dashboard" Tag="{StaticResource Icon_Dashboard}" Style="{StaticResource NavButtonStyle}" IsChecked="True" Command="{Binding NavigateToDashboardCommand}"/>
-                        <RadioButton Content="Empresas" Tag="{StaticResource Icon_Company}" Style="{StaticResource NavButtonStyle}" Command="{Binding NavigateToCompaniesCommand}"/>
-                        <RadioButton Content="DTE Emitidos" Tag="{StaticResource Icon_Invoice}" Style="{StaticResource NavButtonStyle}" Command="{Binding NavigateToDtesCommand}"/>
-                        <RadioButton Content="Nueva Factura" Tag="{StaticResource Icon_Book}" Style="{StaticResource NavButtonStyle}" Command="{Binding NavigateToCreateDteCommand}"/>
-                        <RadioButton Content="Lector OCR" Tag="{StaticResource Icon_Book}" Style="{StaticResource NavButtonStyle}" Command="{Binding NavigateToOcrScannerCommand}"/>
-                        <RadioButton Content="Ingesta Masiva" Tag="{StaticResource Icon_Book}" Style="{StaticResource NavButtonStyle}" Command="{Binding NavigateToIngestionCommand}"/>
-                        <RadioButton Content="Libro de Compras" Tag="{StaticResource Icon_Book}" Style="{StaticResource NavButtonStyle}" Command="{Binding NavigateToPurchasesCommand}"/>
-                        <RadioButton Content="Libros IVA" Tag="{StaticResource Icon_Book}" Style="{StaticResource NavButtonStyle}" Command="{Binding NavigateToVatBooksCommand}"/>
-                    </StackPanel>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!-- GENERAL -->
+                            <TextBlock Text="GENERAL" Style="{StaticResource NavGroupLabel}"/>
+                            <RadioButton Content="Dashboard"
+                                         Tag="{StaticResource Icon_Dashboard}"
+                                         Style="{StaticResource NavItem}"
+                                         IsChecked="True"
+                                         Command="{Binding NavigateToDashboardCommand}"/>
+                            <RadioButton Content="Empresas"
+                                         Tag="{StaticResource Icon_Company}"
+                                         Style="{StaticResource NavItem}"
+                                         Command="{Binding NavigateToCompaniesCommand}"/>
 
-                    <!-- Bottom Nav -->
-                    <StackPanel Grid.Row="2" Margin="0,0,0,20">
-                        <Button Style="{StaticResource OutlineButton}" Command="{Binding ToggleThemeCommand}" Margin="20,0,20,10" Padding="15,8">
-                            <StackPanel Orientation="Horizontal">
-                                <Path Data="{DynamicResource Icon_Moon}" Fill="{DynamicResource TextSecondaryBrush}" Width="14" Height="14" Stretch="Uniform"/>
-                                <TextBlock Text="Cambiar Tema" Margin="10,0,0,0"/>
-                            </StackPanel>
-                        </Button>
-                        <RadioButton Content="Configuración" Tag="{StaticResource Icon_Settings}" Style="{StaticResource NavButtonStyle}"/>
-                    </StackPanel>
+                            <!-- FACTURACIÓN -->
+                            <TextBlock Text="FACTURACIÓN" Style="{StaticResource NavGroupLabel}"/>
+                            <RadioButton Content="DTE Emitidos"
+                                         Tag="{StaticResource Icon_Invoice}"
+                                         Style="{StaticResource NavItem}"
+                                         Command="{Binding NavigateToDtesCommand}"/>
+                            <RadioButton Content="Nueva Factura"
+                                         Tag="{StaticResource Icon_Plus}"
+                                         Style="{StaticResource NavItem}"
+                                         Command="{Binding NavigateToCreateDteCommand}"/>
+
+                            <!-- IMPORTACIÓN -->
+                            <TextBlock Text="IMPORTACIÓN" Style="{StaticResource NavGroupLabel}"/>
+                            <RadioButton Content="Lector OCR"
+                                         Tag="{StaticResource Icon_Scan}"
+                                         Style="{StaticResource NavItem}"
+                                         Command="{Binding NavigateToOcrScannerCommand}"/>
+                            <RadioButton Content="Ingesta Masiva"
+                                         Tag="{StaticResource Icon_Upload}"
+                                         Style="{StaticResource NavItem}"
+                                         Command="{Binding NavigateToIngestionCommand}"/>
+
+                            <!-- CONTABILIDAD -->
+                            <TextBlock Text="CONTABILIDAD" Style="{StaticResource NavGroupLabel}"/>
+                            <RadioButton Content="Libro de Compras"
+                                         Tag="{StaticResource Icon_Cart}"
+                                         Style="{StaticResource NavItem}"
+                                         Command="{Binding NavigateToPurchasesCommand}"/>
+                            <RadioButton Content="Libros IVA"
+                                         Tag="{StaticResource Icon_Book}"
+                                         Style="{StaticResource NavItem}"
+                                         Command="{Binding NavigateToVatBooksCommand}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Footer -->
+                    <Border Grid.Row="2"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                            BorderThickness="0,1,0,0" Padding="14,10">
+                        <StackPanel>
+                            <!-- Theme toggle -->
+                            <Button Style="{StaticResource OutlineButton}"
+                                    Command="{Binding ToggleThemeCommand}"
+                                    Margin="0,0,0,6" Padding="12,8"
+                                    HorizontalAlignment="Stretch">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{DynamicResource Icon_Moon}"
+                                          Fill="{DynamicResource TextSecondaryBrush}"
+                                          Width="14" Height="14" Stretch="Uniform"/>
+                                    <TextBlock Text="Cambiar Tema" Margin="10,0,0,0"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               FontSize="12"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Version -->
+                            <TextBlock Text="v2026.1 · Enterprise Edition"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
 
-            <!-- MAIN CONTENT AREA -->
-            <Border Grid.Column="1" Background="{DynamicResource BgPanelBrush}" BorderBrush="{DynamicResource BgBorderBrush}" BorderThickness="0,1,0,0">
-                <ContentControl Content="{Binding CurrentViewModel}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Focusable="False"/>
+            <!-- ═══ MAIN CONTENT ═══ -->
+            <Border Grid.Column="1" Background="{DynamicResource BgAppBrush}">
+                <ContentControl Content="{Binding CurrentViewModel}"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch"
+                                Focusable="False"/>
             </Border>
         </Grid>
     </Grid>

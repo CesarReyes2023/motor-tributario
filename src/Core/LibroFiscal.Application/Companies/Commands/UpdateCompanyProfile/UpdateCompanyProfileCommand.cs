@@ -15,4 +15,6 @@ public sealed record UpdateCompanyProfileCommand(
     string Email,
     string Department,
     string Municipality,
-    string AddressLine) : ICommand;
+    string AddressLine,
+    string ApiPassword,
+    string? LogoPath) : ICommand;

@@ -12,19 +12,21 @@ namespace LibroFiscal.Application.Companies.Queries.GetCompanyProfile;
 internal sealed class GetCompanyProfileQueryHandler : IQueryHandler<GetCompanyProfileQuery, CompanyProfileDto>
 {
     private readonly IRepository<Company, CompanyId> _companyRepository;
+    private readonly LibroFiscal.Application.Abstractions.Services.IEncryptionService _encryptionService;
 
-    public GetCompanyProfileQueryHandler(IRepository<Company, CompanyId> companyRepository)
+    public GetCompanyProfileQueryHandler(
+        IRepository<Company, CompanyId> companyRepository,
+        LibroFiscal.Application.Abstractions.Services.IEncryptionService encryptionService)
     {
         _companyRepository = companyRepository;
+        _encryptionService = encryptionService;
     }
 
     public async Task<Result<CompanyProfileDto>> Handle(
         GetCompanyProfileQuery request,
         CancellationToken cancellationToken)
     {
-        // Get the first active company (assuming single-tenant MVP or resolved by DbContext filters)
-        var companies = await _companyRepository.FindAsync(c => c.IsActive, cancellationToken);
-        var company = companies.Count > 0 ? companies[0] : null;
+        var company = await _companyRepository.GetByIdAsync(new CompanyId(request.CompanyId), cancellationToken);
 
         if (company is null)
         {
@@ -44,7 +46,9 @@ internal sealed class GetCompanyProfileQueryHandler : IQueryHandler<GetCompanyPr
             Email = company.Correo,
             Department = company.DireccionFiscal.Departamento,
             Municipality = company.DireccionFiscal.Municipio,
-            AddressLine = company.DireccionFiscal.Complemento
+            AddressLine = company.DireccionFiscal.Complemento,
+            ApiPassword = _encryptionService.Decrypt(company.ApiPassword),
+            LogoPath = company.LogoPath
         };
     }
 }

@@ -16,17 +16,21 @@ using LibroFiscal.Application.Abstractions.Services;
 
 namespace LibroFiscal.Desktop.ViewModels;
 
-public partial class VatBooksViewModel : ObservableObject
+public partial class VatBooksViewModel : ObservableObject, IDisposable
 {
     private readonly IMediator _mediator;
     private readonly CsvExportService _csvExportService;
     private readonly IHaciendaF930ExportService _f930ExportService;
+    private readonly IEmpresaActivaService _empresaActivaService;
 
-    public VatBooksViewModel(IMediator mediator, CsvExportService csvExportService, IHaciendaF930ExportService f930ExportService)
+    public VatBooksViewModel(IMediator mediator, CsvExportService csvExportService, IHaciendaF930ExportService f930ExportService, IEmpresaActivaService empresaActivaService)
     {
         _mediator = mediator;
         _csvExportService = csvExportService;
         _f930ExportService = f930ExportService;
+        _empresaActivaService = empresaActivaService;
+        
+        _empresaActivaService.EmpresaCambiadaEvent += OnEmpresaCambiada;
         
         // Populate months
         for (int i = 1; i <= 12; i++)
@@ -44,6 +48,20 @@ public partial class VatBooksViewModel : ObservableObject
         SelectedMonth = Months.FirstOrDefault(m => m.Number == DateTime.Now.Month);
         SelectedYear = currentYear;
         SelectedBookType = BookTypes.First();
+    }
+
+    private void OnEmpresaCambiada(object? sender, Guid e)
+    {
+        _ = GenerateReportAsync();
+    }
+
+    public void Dispose()
+    {
+        if (_empresaActivaService != null)
+        {
+            _empresaActivaService.EmpresaCambiadaEvent -= OnEmpresaCambiada;
+        }
+        GC.SuppressFinalize(this);
     }
 
     public ObservableCollection<MonthItem> Months { get; } = new();
@@ -91,6 +109,9 @@ public partial class VatBooksViewModel : ObservableObject
     {
         if (IsLoading || SelectedMonth == null) return;
 
+        var companyId = _empresaActivaService.EmpresaActualId;
+        if (companyId == null) return;
+
         IsLoading = true;
         ErrorMessage = string.Empty;
         
@@ -105,7 +126,7 @@ public partial class VatBooksViewModel : ObservableObject
         {
             if (SelectedBookType == "Libro de Compras")
             {
-                var result = await _mediator.Send(new GetVatPurchasesBookQuery(SelectedYear, SelectedMonth.Number));
+                var result = await _mediator.Send(new GetVatPurchasesBookQuery(companyId.Value, SelectedYear, SelectedMonth.Number));
                 if (result.IsSuccess)
                 {
                     foreach (var p in result.Value) VatPurchases.Add(p);
@@ -116,7 +137,7 @@ public partial class VatBooksViewModel : ObservableObject
             }
             else if (SelectedBookType == "Libro de Ventas (Contribuyentes)")
             {
-                var result = await _mediator.Send(new GetVatSalesTaxpayerBookQuery(SelectedYear, SelectedMonth.Number));
+                var result = await _mediator.Send(new GetVatSalesTaxpayerBookQuery(companyId.Value, SelectedYear, SelectedMonth.Number));
                 if (result.IsSuccess)
                 {
                     foreach (var s in result.Value) VatSalesTaxpayer.Add(s);
@@ -127,7 +148,7 @@ public partial class VatBooksViewModel : ObservableObject
             }
             else if (SelectedBookType == "Libro de Ventas (Consumidor Final)")
             {
-                var result = await _mediator.Send(new GetVatSalesConsumerBookQuery(SelectedYear, SelectedMonth.Number));
+                var result = await _mediator.Send(new GetVatSalesConsumerBookQuery(companyId.Value, SelectedYear, SelectedMonth.Number));
                 if (result.IsSuccess)
                 {
                     foreach (var s in result.Value) VatSalesConsumer.Add(s);

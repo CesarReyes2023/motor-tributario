@@ -70,8 +70,9 @@ internal sealed class RegisterPurchaseCommandHandler : ICommandHandler<RegisterP
         var journalEntry = journalEntryResult.Value;
 
         // 4. Add lines
-        // Debit Expense (Subtotal)
-        var line1 = journalEntry.AddLine(expenseAccount.Id, debit: purchase.SubTotal, credit: 0);
+        // Debit Expense (SubTotal ajustado para evitar descuadres de 1 centavo por redondeos de Hacienda)
+        var expenseAmount = purchase.TotalAmount - purchase.TaxAmount;
+        var line1 = journalEntry.AddLine(expenseAccount.Id, debit: expenseAmount, credit: 0);
         if (line1.IsFailure) return Result.Failure<PurchaseId>(line1.Error);
 
         // Debit IVA (Tax)
@@ -101,6 +102,9 @@ internal sealed class RegisterPurchaseCommandHandler : ICommandHandler<RegisterP
         return purchase.Id;
     }
 
+    // Cache por instancia (scoped) — se crea por cada request y muere con el handler
+    private readonly Dictionary<string, Account> _accountCache = new();
+
     private async Task<Account> GetOrCreateAccountAsync(
         CompanyId companyId, 
         string code, 
@@ -108,18 +112,30 @@ internal sealed class RegisterPurchaseCommandHandler : ICommandHandler<RegisterP
         AccountType type, 
         CancellationToken cancellationToken)
     {
-        var accounts = await _accountRepository.FindAsync(a => a.CompanyId == companyId && a.Code == code, cancellationToken);
-        var account = accounts.Count > 0 ? accounts[0] : null;
+        var cacheKey = $"{companyId.Value}_{code}";
+        if (_accountCache.TryGetValue(cacheKey, out var cachedAccount))
+        {
+            return cachedAccount;
+        }
+
+        var accounts = await _accountRepository.FindAsync(a => a.Code == code, cancellationToken);
+        var account = accounts.FirstOrDefault(a => a.CompanyId.Value == companyId.Value);
 
         if (account == null)
         {
             var result = Account.Create(companyId, code, name, type, isTransactional: true);
-            account = result.Value;
-            _accountRepository.Add(account);
-            
-            // We don't SaveChangesAsync here, we let the main transaction handle it
+            if (result.IsSuccess)
+            {
+                account = result.Value;
+                _accountRepository.Add(account);
+            }
         }
 
-        return account;
+        if (account != null)
+        {
+            _accountCache[cacheKey] = account;
+        }
+
+        return account!;
     }
 }

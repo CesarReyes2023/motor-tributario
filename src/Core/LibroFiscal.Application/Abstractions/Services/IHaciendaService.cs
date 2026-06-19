@@ -37,6 +37,24 @@ public interface IHaciendaService
     /// Checks if Hacienda API is currently available.
     /// </summary>
     Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Queries the API for all DTEs received within a date range (Metadata).
+    /// </summary>
+    Task<Result<IEnumerable<HaciendaReceivedDte>>> QueryReceivedDtesAsync(
+        string authToken,
+        string nitReceptor,
+        DateTimeOffset startDate,
+        DateTimeOffset endDate,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Downloads the specific JSON of a received DTE.
+    /// </summary>
+    Task<Result<string>> DownloadDteJsonAsync(
+        string authToken,
+        string codigoGeneracion,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed record HaciendaAuthToken(string Token, DateTimeOffset ExpiresAt);
@@ -51,3 +69,13 @@ public sealed record HaciendaDteStatus(
     string Estado,
     string? SelloRecepcion,
     string? MotivoRechazo);
+
+public sealed record HaciendaReceivedDte(
+    string CodigoGeneracion,
+    string NumeroControl,
+    string SelloRecepcion,
+    DateTimeOffset FechaEmision,
+    string TipoDte,
+    string NombreEmisor,
+    string NitEmisor,
+    decimal MontoTotal);

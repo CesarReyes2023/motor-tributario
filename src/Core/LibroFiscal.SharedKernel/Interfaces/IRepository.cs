@@ -44,6 +44,14 @@ public interface IRepository<TEntity, in TId>
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Returns all entities matching the predicate, with ordering.
+    /// </summary>
+    Task<IReadOnlyList<TEntity>> FindAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if any entity matches the specification.
     /// </summary>
     Task<bool> AnyAsync(

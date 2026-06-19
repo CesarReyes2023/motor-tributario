@@ -5,6 +5,7 @@ using LibroFiscal.Integrations;
 using LibroFiscal.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibroFiscal.Desktop;
 
@@ -22,17 +23,10 @@ public partial class App : System.Windows.Application
 
     private static IConfiguration BuildConfiguration()
     {
-        var builder = new ConfigurationBuilder();
-        
-        // Simulating appsettings.json for desktop app:
-        var inMemorySettings = new Dictionary<string, string?>
-        {
-            // For portable V1: Use Sqlite. To return to PostgreSQL, change DatabaseProvider to "PostgreSql"
-            { "DatabaseProvider", "PostgreSql" },
-            { "ConnectionStrings:DefaultConnection", "Host=localhost;Database=librofiscal;Username=postgres;Password=zeref;" }
-        };
-        
-        builder.AddInMemoryCollection(inMemorySettings);
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
         return builder.Build();
     }
 
@@ -56,7 +50,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<PurchasesViewModel>();
         services.AddTransient<VatBooksViewModel>();
         services.AddTransient<IngestionViewModel>();
-
+        services.AddTransient<SettingsViewModel>();
         // Views
         services.AddTransient<Views.LoginView>();
         services.AddTransient<Views.CompanyView>();
@@ -70,6 +64,9 @@ public partial class App : System.Windows.Application
 
         // Services
         services.AddSingleton<LibroFiscal.Application.Abstractions.Services.ICurrentUserService, Desktop.Services.CurrentUserService>();
+        services.AddSingleton<LibroFiscal.Application.Abstractions.Services.IEmpresaActivaService, Desktop.Services.EmpresaActivaService>();
+        services.AddSingleton<LibroFiscal.Application.Abstractions.Services.IDialogService, Desktop.Services.DialogService>();
+        services.AddSingleton<LibroFiscal.Application.Abstractions.Services.IErrorLogger, Desktop.Services.ErrorLogger>();
         services.AddSingleton<Desktop.Services.CsvExportService>();
 
         return services.BuildServiceProvider();
@@ -79,25 +76,77 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
+        this.DispatcherUnhandledException += (s, args) =>
+        {
+            var logsDir = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "LibroFiscal", "Logs");
+            System.IO.Directory.CreateDirectory(logsDir);
+            var errorPath = System.IO.Path.Combine(logsDir, "crash_empresa.txt");
+            System.IO.File.WriteAllText(errorPath, $"FATAL: {args.Exception.Message}\n{args.Exception.StackTrace}\nInner: {args.Exception.InnerException?.Message}");
+            MessageBox.Show($"FATAL ERROR: {args.Exception.Message}\n(Log guardado en {logsDir})", "Crash App", MessageBoxButton.OK, MessageBoxImage.Error);
+            args.Handled = true;
+        };
+
         // Prevents the application from shutting down when the LoginView closes
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-        // Ensure SQLite DB is created (MVP feature)
-        var dbContext = Services.GetRequiredService<LibroFiscalDbContext>();
-        dbContext.Database.EnsureCreated();
+        try
+        {
+            // Ensure SQLite DB is created (MVP feature) or Postgres is migrated
+            var dbContext = Services.GetRequiredService<LibroFiscalDbContext>();
+            
+            var databaseProvider = Configuration["DatabaseProvider"];
+            if (databaseProvider == "Sqlite")
+            {
+                dbContext.Database.EnsureCreated();
+            }
+            else
+            {
+                // Apply migrations for PostgreSQL
+                dbContext.Database.Migrate();
+            }
+
+            var loginView = Services.GetRequiredService<Views.LoginView>();
+            
+            if (loginView.ShowDialog() == true)
+            {
+                var mainWindow = Services.GetRequiredService<MainWindow>();
+                System.Windows.Application.Current.MainWindow = mainWindow;
+                ShutdownMode = ShutdownMode.OnLastWindowClose;
+                mainWindow.Show();
+            }
+            else
+            {
+                Shutdown();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"FATAL ERROR: {ex.Message}\n{ex.InnerException?.Message}", "Crash", MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown();
+        }
+    }
+
+    public void Logout()
+    {
+        var currentUserService = Services.GetRequiredService<LibroFiscal.Application.Abstractions.Services.ICurrentUserService>();
+        currentUserService.Clear();
 
         var loginView = Services.GetRequiredService<Views.LoginView>();
+        
+        var currentMainWindow = MainWindow;
+        MainWindow = loginView;
         
         if (loginView.ShowDialog() == true)
         {
             var mainWindow = Services.GetRequiredService<MainWindow>();
-            System.Windows.Application.Current.MainWindow = mainWindow;
-            ShutdownMode = ShutdownMode.OnLastWindowClose;
+            MainWindow = mainWindow;
             mainWindow.Show();
         }
         else
         {
             Shutdown();
         }
+
+        currentMainWindow?.Close();
     }
 }

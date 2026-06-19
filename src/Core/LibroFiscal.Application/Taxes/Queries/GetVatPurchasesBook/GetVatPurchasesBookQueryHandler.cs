@@ -22,17 +22,19 @@ internal sealed class GetVatPurchasesBookQueryHandler : IQueryHandler<GetVatPurc
     public async Task<Result<IReadOnlyList<VatPurchaseDto>>> Handle(GetVatPurchasesBookQuery request, CancellationToken cancellationToken)
     {
         // Obtener compras del mes y año especificado
+        var startDate = new System.DateTimeOffset(new System.DateTime(request.Year, request.Month, 1), System.TimeSpan.Zero);
+        var endDate = startDate.AddMonths(1);
+
+        var companyId = new CompanyId(request.CompanyId);
         var purchases = await _purchaseRepository.FindAsync(
-            p => p.IssueDate.Month == request.Month && p.IssueDate.Year == request.Year, 
+            p => p.CompanyId == companyId && p.IssueDate >= startDate && p.IssueDate < endDate, 
+            q => q.OrderBy(p => p.IssueDate).ThenBy(p => p.DocumentNumber),
             cancellationToken);
 
-        // Ordenar por fecha y luego proyectar
-        var sortedPurchases = purchases.OrderBy(p => p.IssueDate).ThenBy(p => p.DocumentNumber).ToList();
-        
         var dtos = new List<VatPurchaseDto>();
         int rowNumber = 1;
 
-        foreach (var p in sortedPurchases)
+        foreach (var p in purchases)
         {
             // Asumimos para este MVP que todas las compras con IVA van a "InternalPurchases" y su IVA a "TaxCredit"
             // Las compras sin IVA van a "ExemptPurchases"

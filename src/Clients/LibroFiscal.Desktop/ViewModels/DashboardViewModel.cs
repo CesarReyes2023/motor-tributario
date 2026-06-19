@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace LibroFiscal.Desktop.ViewModels;
 
-public partial class DashboardViewModel : ObservableObject
+public partial class DashboardViewModel : ObservableObject, IDisposable
 {
     private readonly IMediator _mediator;
+    private readonly LibroFiscal.Application.Abstractions.Services.IEmpresaActivaService _empresaActivaService;
 
     [ObservableProperty]
     private decimal _totalSales;
@@ -44,9 +45,21 @@ public partial class DashboardViewModel : ObservableObject
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Used for XAML Binding")]
     public string CurrentMonthName => DateTime.Now.ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-ES")).ToUpper(new System.Globalization.CultureInfo("es-ES"));
 
-    public DashboardViewModel(IMediator mediator)
+    public DashboardViewModel(
+        IMediator mediator,
+        LibroFiscal.Application.Abstractions.Services.IEmpresaActivaService empresaActivaService)
     {
         _mediator = mediator;
+        _empresaActivaService = empresaActivaService;
+        _empresaActivaService.EmpresaCambiadaEvent += OnEmpresaCambiada;
+    }
+
+    private void OnEmpresaCambiada(object? sender, Guid e) => _ = LoadDashboardAsync();
+
+    public void Dispose()
+    {
+        _empresaActivaService.EmpresaCambiadaEvent -= OnEmpresaCambiada;
+        GC.SuppressFinalize(this);
     }
 
     [RelayCommand]
@@ -54,12 +67,15 @@ public partial class DashboardViewModel : ObservableObject
     {
         if (IsLoading) return;
         
+        var companyId = _empresaActivaService.EmpresaActualId;
+        if (companyId == null) return;
+        
         IsLoading = true;
         ErrorMessage = string.Empty;
 
         try
         {
-            var query = new GetDashboardMetricsQuery(DateTime.Now.Year, DateTime.Now.Month);
+            var query = new GetDashboardMetricsQuery(companyId.Value, DateTime.Now.Year, DateTime.Now.Month);
             var result = await _mediator.Send(query);
 
             if (result.IsSuccess)

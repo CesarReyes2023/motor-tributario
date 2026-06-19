@@ -3,4 +3,4 @@ using System.Collections.Generic;
 
 namespace LibroFiscal.Application.Purchases.Queries.GetPurchases;
 
-public sealed record GetPurchasesQuery() : IQuery<IReadOnlyList<PurchaseDto>>;
+public sealed record GetPurchasesQuery(System.Guid CompanyId) : IQuery<IReadOnlyList<PurchaseDto>>;

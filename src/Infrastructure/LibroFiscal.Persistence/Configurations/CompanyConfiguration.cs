@@ -44,6 +44,14 @@ public sealed class CompanyConfiguration : IEntityTypeConfiguration<Company>
         builder.Property(c => c.IsActive)
             .IsRequired();
 
+        builder.Property(c => c.ApiPassword)
+            .HasMaxLength(255)
+            .HasDefaultValue("");
+
+        builder.Property(c => c.LogoPath)
+            .HasMaxLength(500)
+            .IsRequired(false);
+
         // Owns NIT as a value object
         builder.OwnsOne(c => c.Nit, nitBuilder =>
         {
@@ -68,8 +76,8 @@ public sealed class CompanyConfiguration : IEntityTypeConfiguration<Company>
         // Direccion Fiscal
         builder.OwnsOne(c => c.DireccionFiscal, dirBuilder =>
         {
-            dirBuilder.Property(d => d.Departamento).HasColumnName("Departamento").HasMaxLength(2).IsRequired();
-            dirBuilder.Property(d => d.Municipio).HasColumnName("Municipio").HasMaxLength(2).IsRequired();
+            dirBuilder.Property(d => d.Departamento).HasColumnName("Departamento").HasMaxLength(100).IsRequired();
+            dirBuilder.Property(d => d.Municipio).HasColumnName("Municipio").HasMaxLength(100).IsRequired();
             dirBuilder.Property(d => d.Complemento).HasColumnName("DireccionComplemento").HasMaxLength(200).IsRequired();
         });
 
@@ -129,8 +137,8 @@ public sealed class EstablishmentConfiguration : IEntityTypeConfiguration<Establ
 
         builder.OwnsOne(e => e.Direccion, dirBuilder =>
         {
-            dirBuilder.Property(d => d.Departamento).HasColumnName("Departamento").HasMaxLength(2).IsRequired();
-            dirBuilder.Property(d => d.Municipio).HasColumnName("Municipio").HasMaxLength(2).IsRequired();
+            dirBuilder.Property(d => d.Departamento).HasColumnName("Departamento").HasMaxLength(100).IsRequired();
+            dirBuilder.Property(d => d.Municipio).HasColumnName("Municipio").HasMaxLength(100).IsRequired();
             dirBuilder.Property(d => d.Complemento).HasColumnName("DireccionComplemento").HasMaxLength(200).IsRequired();
         });
     }

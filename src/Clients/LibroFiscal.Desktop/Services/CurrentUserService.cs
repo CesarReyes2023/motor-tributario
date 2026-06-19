@@ -6,16 +6,29 @@ public sealed class CurrentUserService : ICurrentUserService
 {
     public Guid? UserId { get; private set; }
     public string? Username { get; private set; }
+    public string? ProfilePicturePath { get; private set; }
 
-    public void SetUser(Guid userId, string username)
+    public event EventHandler? ProfilePictureChanged;
+
+    public void SetUser(Guid userId, string username, string? profilePicturePath)
     {
         UserId = userId;
         Username = username;
+        ProfilePicturePath = profilePicturePath;
+        ProfilePictureChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void UpdateProfilePicturePath(string? path)
+    {
+        ProfilePicturePath = path;
+        ProfilePictureChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void Clear()
     {
         UserId = null;
         Username = null;
+        ProfilePicturePath = null;
+        ProfilePictureChanged?.Invoke(this, EventArgs.Empty);
     }
 }

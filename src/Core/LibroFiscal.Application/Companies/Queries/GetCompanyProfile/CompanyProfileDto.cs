@@ -18,4 +18,9 @@ public sealed record CompanyProfileDto
     public string Department { get; init; } = string.Empty;
     public string Municipality { get; init; } = string.Empty;
     public string AddressLine { get; init; } = string.Empty;
+    
+    // API Integration
+    public string ApiPassword { get; init; } = string.Empty;
+
+    public string? LogoPath { get; init; }
 }

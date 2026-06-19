@@ -6,5 +6,7 @@ public record OcrResultDto(
     string? NrcEncontrado,
     decimal? TotalEncontrado,
     decimal? IvaEncontrado,
-    DateTimeOffset? FechaEncontrada
+    DateTimeOffset? FechaEncontrada,
+    string? NumeroDocumento = null,
+    string? NombreProveedor = null
 );

@@ -1,4 +1,3 @@
-using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LibroFiscal.Application.Abstractions.Services;
@@ -52,7 +51,7 @@ public sealed partial class LoginViewModel : ObservableObject
 
             if (result.IsSuccess)
             {
-                _currentUserService.SetUser(result.Value.UserId, result.Value.Username);
+                _currentUserService.SetUser(result.Value.UserId, result.Value.Username, result.Value.ProfilePicturePath);
                 LoginSuccessful?.Invoke(this, EventArgs.Empty);
             }
             else

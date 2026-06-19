@@ -22,6 +22,7 @@ public sealed class User : AggregateRoot<UserId>
     public string Username { get; private set; } = string.Empty;
     public string PasswordHash { get; private set; } = string.Empty;
     public UserRole Role { get; private set; } = null!;
+    public string? ProfilePicturePath { get; private set; }
     public bool IsActive { get; private set; }
 
     public static User Create(string username, string passwordHash, UserRole role)
@@ -37,5 +38,10 @@ public sealed class User : AggregateRoot<UserId>
     public void UpdatePassword(string passwordHash)
     {
         PasswordHash = passwordHash;
+    }
+
+    public void UpdateProfilePicture(string? profilePicturePath)
+    {
+        ProfilePicturePath = profilePicturePath;
     }
 }

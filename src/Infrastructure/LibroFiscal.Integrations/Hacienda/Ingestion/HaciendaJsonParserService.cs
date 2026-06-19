@@ -24,43 +24,113 @@ public class HaciendaJsonParserService : IDteParserService
             // Para el MVP asumimos que parsearemos la estructura básica del DTE.
             var root = document.RootElement;
             
-            // Lógica de navegación del JSON de Hacienda (identificacion, resumen, receptor, etc.)
-            // Estos campos deben extraerse de los nodos específicos del JSON estructurado del MH.
-            
-            // Placeholder: Parsear el documento individual
-            if (root.TryGetProperty("identificacion", out var identificacion) &&
-                root.TryGetProperty("resumen", out var resumen) &&
-                root.TryGetProperty("receptor", out var receptor))
+            var elementsToProcess = new List<JsonElement>();
+            if (root.ValueKind == JsonValueKind.Array)
             {
-                var tipoDoc = identificacion.GetProperty("tipoDte").GetString() ?? "";
-                var codGeneracion = identificacion.GetProperty("codigoGeneracion").GetString() ?? "";
-                var numControl = identificacion.GetProperty("numeroControl").GetString() ?? "";
-                var fechaStr = identificacion.GetProperty("fecEmi").GetString() ?? "";
+                elementsToProcess.AddRange(root.EnumerateArray());
+            }
+            else
+            {
+                elementsToProcess.Add(root);
+            }
+
+            foreach (var element in elementsToProcess)
+            {
+                var dteRoot = element;
                 
-                _ = DateTimeOffset.TryParse(fechaStr, out var fechaEmision);
+                // A veces el MH anida el DTE dentro de un nodo "dteJson" o "documento"
+                if (dteRoot.TryGetProperty("dteJson", out var dteJsonProp))
+                {
+                    dteRoot = dteJsonProp;
+                }
+                else if (dteRoot.TryGetProperty("documento", out var docProp))
+                {
+                    dteRoot = docProp;
+                }
 
-                var nitReceptor = receptor.TryGetProperty("nit", out var n) ? n.GetString() : "";
-                var nrcReceptor = receptor.TryGetProperty("nrc", out var r) ? r.GetString() : "";
+                if (dteRoot.TryGetProperty("identificacion", out var identificacion) &&
+                    dteRoot.TryGetProperty("resumen", out var resumen))
+                {
+                    var tipoDoc = identificacion.TryGetProperty("tipoDte", out var t) ? t.GetString() : "";
+                    var codGeneracion = identificacion.TryGetProperty("codigoGeneracion", out var cg) ? cg.GetString() : "";
+                    var numControl = identificacion.TryGetProperty("numeroControl", out var nc) ? nc.GetString() : "";
+                    var fechaStr = identificacion.TryGetProperty("fecEmi", out var fe) ? fe.GetString() : "";
+                    
+                    _ = DateTimeOffset.TryParse(fechaStr, out var fechaEmision);
 
-                var totalPagar = resumen.GetProperty("totalPagar").GetDecimal();
-                var totalIva = resumen.TryGetProperty("totalIva", out var iva) ? iva.GetDecimal() : 0m;
-                var totalExentas = resumen.TryGetProperty("totalExenta", out var ex) ? ex.GetDecimal() : 0m;
-                var totalGravadas = resumen.TryGetProperty("totalGravada", out var gr) ? gr.GetDecimal() : 0m;
+                    // Emisor o Receptor dependiendo si es factura recibida o emitida
+                    var emisor = dteRoot.TryGetProperty("emisor", out var em) ? em : default;
+                    var nitEmisor = emisor.ValueKind != JsonValueKind.Undefined && emisor.TryGetProperty("nit", out var nEmisor) ? nEmisor.GetString() : "";
+                    var nrcEmisor = emisor.ValueKind != JsonValueKind.Undefined && emisor.TryGetProperty("nrc", out var rEmisor) ? rEmisor.GetString() : "";
 
-                var dto = new DteExtractionDto(
-                    NitEmisor: nitReceptor ?? "", // En una compra, el "emisor" del DTE es nuestro proveedor. Si es una venta, somos nosotros. Depende de la perspectiva.
-                    NrcEmisor: nrcReceptor ?? "",
-                    FechaEmision: fechaEmision,
-                    TipoDocumento: tipoDoc,
-                    MontoTotal: totalPagar,
-                    MontoIva: totalIva,
-                    VentasExentas: totalExentas,
-                    VentasGravadas: totalGravadas,
-                    NumeroControl: numControl,
-                    CodigoGeneracion: codGeneracion
-                );
+                    // Intenta recuperar el receptor si el emisor falla
+                    if (string.IsNullOrEmpty(nitEmisor) && dteRoot.TryGetProperty("receptor", out var receptor))
+                    {
+                        nitEmisor = receptor.TryGetProperty("nit", out var nRec) ? nRec.GetString() : "";
+                        nrcEmisor = receptor.TryGetProperty("nrc", out var rRec) ? rRec.GetString() : "";
+                    }
 
-                extractedDtes.Add(dto);
+                    var totalPagar = resumen.TryGetProperty("totalPagar", out var tp) ? tp.GetDecimal() : 
+                                     (resumen.TryGetProperty("montoTotalOperacion", out var mt) ? mt.GetDecimal() : 0m);
+                                     
+                    var totalIva = resumen.TryGetProperty("totalIva", out var iva) ? iva.GetDecimal() : 0m;
+                    var totalExentas = resumen.TryGetProperty("totalExenta", out var ex) ? ex.GetDecimal() : 0m;
+                    var totalGravadas = resumen.TryGetProperty("totalGravada", out var gr) ? gr.GetDecimal() : 0m;
+
+                    var dto = new DteExtractionDto(
+                        NitEmisor: nitEmisor ?? "", 
+                        NrcEmisor: nrcEmisor ?? "",
+                        FechaEmision: fechaEmision,
+                        TipoDocumento: tipoDoc ?? "",
+                        MontoTotal: totalPagar,
+                        MontoIva: totalIva,
+                        VentasExentas: totalExentas,
+                        VentasGravadas: totalGravadas,
+                        NumeroControl: numControl ?? "",
+                        CodigoGeneracion: codGeneracion ?? ""
+                    );
+
+                    extractedDtes.Add(dto);
+                }
+                else if (dteRoot.TryGetProperty("fechaEmision", out var fechaEmisionProp) &&
+                         dteRoot.TryGetProperty("numeroDocumento", out var numeroDocProp))
+                {
+                    // Soporte para JSON simplificado/mock
+                    _ = DateTimeOffset.TryParse(fechaEmisionProp.GetString(), out var fechaEmision);
+                    
+                    var nitEmisor = dteRoot.TryGetProperty("nitProveedor", out var np) ? np.GetString() : "";
+                    var nrcEmisor = dteRoot.TryGetProperty("nrcProveedor", out var nrcp) ? nrcp.GetString() : "";
+                    var numControl = numeroDocProp.GetString() ?? "";
+                    
+                    var totalPagar = dteRoot.TryGetProperty("total", out var t) ? t.GetDecimal() : 0m;
+                    var totalIva = dteRoot.TryGetProperty("creditoFiscal", out var cf) ? cf.GetDecimal() : 0m;
+                    var totalExentas = dteRoot.TryGetProperty("comprasExentas", out var ce) ? ce.GetDecimal() : 0m;
+                    var totalGravadas = dteRoot.TryGetProperty("comprasGravadas", out var cg) ? cg.GetDecimal() : 0m;
+
+                    var dto = new DteExtractionDto(
+                        NitEmisor: nitEmisor ?? "", 
+                        NrcEmisor: nrcEmisor ?? "",
+                        FechaEmision: fechaEmision,
+                        TipoDocumento: "03", // Asumimos CCF para el mock
+                        MontoTotal: totalPagar,
+                        MontoIva: totalIva,
+                        VentasExentas: totalExentas,
+                        VentasGravadas: totalGravadas,
+                        NumeroControl: numControl,
+                        CodigoGeneracion: System.Guid.NewGuid().ToString().ToUpperInvariant() // Mock UUID
+                    );
+
+                    extractedDtes.Add(dto);
+                }
+                else
+                {
+                    // Opcional: registrar que un elemento falló. Para el MVP ignoramos elementos vacíos en el array o fallamos.
+                    if (elementsToProcess.Count == 1) 
+                    {
+                        var keys = dteRoot.ValueKind == JsonValueKind.Object ? string.Join(", ", System.Linq.Enumerable.Select(dteRoot.EnumerateObject(), x => x.Name)) : dteRoot.ValueKind.ToString();
+                        return Task.FromResult(Result.Failure<IEnumerable<DteExtractionDto>>(Error.Failure("JsonParser.Format", $"Estructura de DTE desconocida. Nodos encontrados: {keys}")));
+                    }
+                }
             }
 
             return Task.FromResult(Result.Success<IEnumerable<DteExtractionDto>>(extractedDtes));
