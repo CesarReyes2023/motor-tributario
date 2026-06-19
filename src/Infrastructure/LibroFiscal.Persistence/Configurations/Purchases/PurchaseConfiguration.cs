@@ -12,7 +12,7 @@ internal sealed class PurchaseConfiguration : IEntityTypeConfiguration<Purchase>
         builder.ToTable("Purchases");
 
         builder.HasKey(x => x.Id);
-
+        
         builder.Property(x => x.Id)
             .HasConversion(id => id.Value, value => PurchaseId.From(value));
 

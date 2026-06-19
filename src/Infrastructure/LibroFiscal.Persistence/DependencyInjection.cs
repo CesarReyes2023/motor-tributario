@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
         services.AddScoped<LibroFiscal.Application.DTE.Queries.GetDtes.IDteReadService, LibroFiscal.Persistence.Services.DteReadService>();
         services.AddSingleton<LibroFiscal.Application.Abstractions.Services.IPasswordHasher, LibroFiscal.Persistence.Security.PasswordHasher>();
+        services.AddSingleton<LibroFiscal.Application.Abstractions.Services.IEncryptionService, LibroFiscal.Persistence.Security.EncryptionService>();
 
         return services;
     }

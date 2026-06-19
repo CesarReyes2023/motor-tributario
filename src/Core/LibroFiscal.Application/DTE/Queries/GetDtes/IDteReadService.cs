@@ -6,5 +6,5 @@ namespace LibroFiscal.Application.DTE.Queries.GetDtes;
 
 public interface IDteReadService
 {
-    Task<List<DteSummaryDto>> GetDtesAsync(CancellationToken cancellationToken = default);
+    Task<List<DteSummaryDto>> GetDtesAsync(System.Guid companyId, CancellationToken cancellationToken = default);
 }

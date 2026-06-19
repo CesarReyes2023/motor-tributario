@@ -10,7 +10,7 @@ using LibroFiscal.SharedKernel.Results;
 
 namespace LibroFiscal.Application.DTE.Queries.GetDtes;
 
-public record GetDtesQuery() : IQuery<List<DteSummaryDto>>;
+public record GetDtesQuery(System.Guid CompanyId) : IQuery<List<DteSummaryDto>>;
 
 public sealed class GetDtesQueryHandler : IQueryHandler<GetDtesQuery, List<DteSummaryDto>>
 {
@@ -23,7 +23,7 @@ public sealed class GetDtesQueryHandler : IQueryHandler<GetDtesQuery, List<DteSu
 
     public async Task<Result<List<DteSummaryDto>>> Handle(GetDtesQuery request, CancellationToken cancellationToken)
     {
-        var dtos = await _readService.GetDtesAsync(cancellationToken);
+        var dtos = await _readService.GetDtesAsync(request.CompanyId, cancellationToken);
         return Result.Success(dtos);
     }
 }

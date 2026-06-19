@@ -1,18 +1,22 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LibroFiscal.Application.Abstractions.Services;
 using LibroFiscal.Application.OCR.Commands.ScanDte;
 using MediatR;
 using Microsoft.Win32;
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace LibroFiscal.Desktop.ViewModels;
 
 public partial class OcrScannerViewModel : ObservableObject
 {
     private readonly IMediator _mediator;
+    private readonly IEmpresaActivaService _empresaActivaService;
+    private readonly IDialogService _dialogService;
 
     [ObservableProperty]
     private string _imagePath = string.Empty;
@@ -36,12 +40,13 @@ public partial class OcrScannerViewModel : ObservableObject
     private string _fechaDetectada = string.Empty;
 
     [ObservableProperty]
-    private bool _isScanning;
+    private string _numeroDocumentoDetectado = string.Empty;
 
-    public OcrScannerViewModel(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
+    [ObservableProperty]
+    private string _proveedorDetectado = string.Empty;
+
+    [ObservableProperty]
+    private bool _isScanning;
 
     [ObservableProperty]
     private bool _isPdfFile;
@@ -51,6 +56,18 @@ public partial class OcrScannerViewModel : ObservableObject
 
     [ObservableProperty]
     private string _imagePreviewPath = string.Empty;
+
+    private DateTimeOffset? _rawFechaDetectada;
+
+    public OcrScannerViewModel(
+        IMediator mediator, 
+        IEmpresaActivaService empresaActivaService,
+        IDialogService dialogService)
+    {
+        _mediator = mediator;
+        _empresaActivaService = empresaActivaService;
+        _dialogService = dialogService;
+    }
 
     [RelayCommand]
     private void SelectImage()
@@ -75,6 +92,9 @@ public partial class OcrScannerViewModel : ObservableObject
             TotalDetectado = string.Empty;
             IvaDetectado = string.Empty;
             FechaDetectada = string.Empty;
+            NumeroDocumentoDetectado = string.Empty;
+            ProveedorDetectado = string.Empty;
+            _rawFechaDetectada = null;
         }
     }
 
@@ -83,7 +103,7 @@ public partial class OcrScannerViewModel : ObservableObject
     {
         if (string.IsNullOrEmpty(ImagePath) || !File.Exists(ImagePath))
         {
-            MessageBox.Show("Por favor, seleccione una imagen válida primero.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialogService.ShowWarning("Por favor, seleccione una imagen válida primero.");
             return;
         }
 
@@ -103,18 +123,21 @@ public partial class OcrScannerViewModel : ObservableObject
                 var culture = new System.Globalization.CultureInfo("en-US");
                 TotalDetectado = dto.TotalEncontrado?.ToString("C", culture) ?? "No detectado";
                 IvaDetectado = dto.IvaEncontrado?.ToString("C", culture) ?? "No detectado";
+                _rawFechaDetectada = dto.FechaEncontrada;
                 FechaDetectada = dto.FechaEncontrada?.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture) ?? "No detectada";
+                NumeroDocumentoDetectado = dto.NumeroDocumento ?? "No detectado";
+                ProveedorDetectado = dto.NombreProveedor ?? "No detectado";
 
-                MessageBox.Show("Análisis completado.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                _dialogService.ShowInfo("Análisis completado.", "Éxito");
             }
             else
             {
-                MessageBox.Show($"Error al procesar: {result.Error.Message}", "Error OCR", MessageBoxButton.OK, MessageBoxImage.Error);
+                _dialogService.ShowError($"Error al procesar: {result.Error.Message}", "Error OCR");
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Error inesperado: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialogService.ShowError($"Error inesperado: {ex.Message}");
         }
         finally
         {
@@ -127,7 +150,7 @@ public partial class OcrScannerViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(NitDetectado) || NitDetectado == "No detectado")
         {
-            MessageBox.Show("Por favor, asegúrese de que el NIT es válido antes de registrar la compra.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialogService.ShowWarning("Por favor, asegúrese de que el NIT es válido antes de registrar la compra.");
             return;
         }
 
@@ -148,19 +171,27 @@ public partial class OcrScannerViewModel : ObservableObject
             
             if (totalAmount == 0)
             {
-                MessageBox.Show("El monto total debe ser mayor a cero.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _dialogService.ShowError("El monto total debe ser mayor a cero.");
                 return;
             }
 
             subTotal = totalAmount - taxAmount;
 
+            var companyId = _empresaActivaService.EmpresaActualId;
+
+            if (companyId == null)
+            {
+                _dialogService.ShowError("No hay ninguna empresa configurada o activa para registrar la compra.");
+                return;
+            }
+
             var command = new LibroFiscal.Application.Purchases.Commands.RegisterPurchase.RegisterPurchaseCommand(
-                CompanyId: Guid.Parse("00000000-0000-0000-0000-000000000001"), // MVP Hardcoded for now
+                CompanyId: companyId.Value,
                 SupplierNit: NitDetectado,
                 SupplierNrc: NrcDetectado == "No detectado" ? string.Empty : NrcDetectado,
-                SupplierName: "Proveedor OCR", // Podría ser extraído en el futuro
-                IssueDate: DateTimeOffset.UtcNow, // Debería extraerse la fecha real en el futuro
-                DocumentNumber: "DTE-XXX",
+                SupplierName: ProveedorDetectado == "No detectado" ? "Proveedor OCR" : ProveedorDetectado,
+                IssueDate: _rawFechaDetectada ?? DateTimeOffset.UtcNow,
+                DocumentNumber: NumeroDocumentoDetectado == "No detectado" ? $"DTE-OCR-{Guid.NewGuid().ToString().Substring(0,5).ToUpperInvariant()}" : NumeroDocumentoDetectado,
                 SubTotal: subTotal,
                 TaxAmount: taxAmount,
                 TotalAmount: totalAmount
@@ -170,7 +201,7 @@ public partial class OcrScannerViewModel : ObservableObject
 
             if (result.IsSuccess)
             {
-                MessageBox.Show("¡Compra y partida doble registradas exitosamente!", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                _dialogService.ShowInfo("¡Compra y partida doble registradas exitosamente!", "Éxito");
                 // Limpiar vista
                 ImagePath = string.Empty;
                 ImagePreviewPath = string.Empty;
@@ -183,12 +214,12 @@ public partial class OcrScannerViewModel : ObservableObject
             }
             else
             {
-                MessageBox.Show($"Error al registrar: {result.Error.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _dialogService.ShowError($"Error al registrar: {result.Error.Message}");
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Error inesperado: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialogService.ShowError($"Error inesperado: {ex.Message}");
         }
         finally
         {

@@ -7,4 +7,4 @@ namespace LibroFiscal.Application.Users.Queries.AuthenticateUser;
 
 public sealed record AuthenticateUserQuery(string Username, string Password) : IQuery<AuthenticationResultDto>;
 
-public sealed record AuthenticationResultDto(Guid UserId, string Username, string RoleName);
+public sealed record AuthenticationResultDto(Guid UserId, string Username, string RoleName, string? ProfilePicturePath);

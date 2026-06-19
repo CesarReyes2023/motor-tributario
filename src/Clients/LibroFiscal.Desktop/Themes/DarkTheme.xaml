@@ -1,21 +1,115 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- COLOR PALETTE (INDIGO DARK) -->
-    <Color x:Key="C_BgApp">#0B0B0E</Color>
-    <Color x:Key="C_BgPanel">#15151B</Color>
-    <Color x:Key="C_BgHover">#1F1F28</Color>
-    <Color x:Key="C_BgBorder">#2A2A35</Color>
-    <Color x:Key="C_Primary">#6366F1</Color>
-    <Color x:Key="C_PrimaryHover">#818CF8</Color>
-    <Color x:Key="C_TextPrimary">#F8FAFC</Color>
-    <Color x:Key="C_TextSecondary">#94A3B8</Color>
 
-    <SolidColorBrush x:Key="BgAppBrush" Color="{StaticResource C_BgApp}"/>
-    <SolidColorBrush x:Key="BgPanelBrush" Color="{StaticResource C_BgPanel}"/>
-    <SolidColorBrush x:Key="BgHoverBrush" Color="{StaticResource C_BgHover}"/>
-    <SolidColorBrush x:Key="BgBorderBrush" Color="{StaticResource C_BgBorder}"/>
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource C_Primary}"/>
-    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="{StaticResource C_PrimaryHover}"/>
-    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource C_TextPrimary}"/>
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- TERMINAL OBSIDIAN — DARK THEME                  -->
+    <!-- Concepto: Finance OS · Profundidad por capas    -->
+    <!-- ═══════════════════════════════════════════════ -->
+
+    <!-- BASE SURFACES -->
+    <Color x:Key="C_BgVoid">#050709</Color>
+    <Color x:Key="C_BgApp">#080B10</Color>
+    <Color x:Key="C_BgSidebar">#0C1018</Color>
+    <Color x:Key="C_BgPanel">#10151E</Color>
+    <Color x:Key="C_BgCard">#141922</Color>
+    <Color x:Key="C_BgHover">#1A2130</Color>
+    <Color x:Key="C_BgActive">#1F2940</Color>
+    <Color x:Key="C_BgInput">#0E131A</Color>
+
+    <!-- BORDERS -->
+    <Color x:Key="C_Border">#1E2840</Color>
+    <Color x:Key="C_BorderSubtle">#151D2E</Color>
+    <Color x:Key="C_BorderFocus">#00D4FF</Color>
+
+    <!-- ACCENT — CYAN ELECTRIC -->
+    <Color x:Key="C_Cyan">#00D4FF</Color>
+    <Color x:Key="C_CyanDim">#0099BB</Color>
+    <Color x:Key="C_CyanGlow">#1A00D4FF</Color>
+
+    <!-- SEMANTIC COLORS -->
+    <Color x:Key="C_Emerald">#10B981</Color>
+    <Color x:Key="C_EmeraldDim">#059669</Color>
+    <Color x:Key="C_Amber">#F59E0B</Color>
+    <Color x:Key="C_AmberDim">#D97706</Color>
+    <Color x:Key="C_Danger">#EF4444</Color>
+    <Color x:Key="C_DangerDim">#DC2626</Color>
+    <Color x:Key="C_Violet">#8B5CF6</Color>
+    <Color x:Key="C_VioletDim">#7C3AED</Color>
+
+    <!-- TEXT -->
+    <Color x:Key="C_TextPrimary">#E8EDF5</Color>
+    <Color x:Key="C_TextSecondary">#6B7FA3</Color>
+    <Color x:Key="C_TextMuted">#3D4F6E</Color>
+    <Color x:Key="C_TextInverse">#080B10</Color>
+
+    <!-- ═══ SOLID BRUSHES ═══ -->
+    <SolidColorBrush x:Key="BgVoidBrush"       Color="{StaticResource C_BgVoid}"/>
+    <SolidColorBrush x:Key="BgAppBrush"        Color="{StaticResource C_BgApp}"/>
+    <SolidColorBrush x:Key="BgSidebarBrush"    Color="{StaticResource C_BgSidebar}"/>
+    <SolidColorBrush x:Key="BgPanelBrush"      Color="{StaticResource C_BgPanel}"/>
+    <SolidColorBrush x:Key="BgCardBrush"       Color="{StaticResource C_BgCard}"/>
+    <SolidColorBrush x:Key="BgHoverBrush"      Color="{StaticResource C_BgHover}"/>
+    <SolidColorBrush x:Key="BgActiveBrush"     Color="{StaticResource C_BgActive}"/>
+    <SolidColorBrush x:Key="BgInputBrush"      Color="{StaticResource C_BgInput}"/>
+
+    <SolidColorBrush x:Key="BgBorderBrush"     Color="{StaticResource C_Border}"/>
+    <SolidColorBrush x:Key="BorderSubtleBrush" Color="{StaticResource C_BorderSubtle}"/>
+    <SolidColorBrush x:Key="BorderFocusBrush"  Color="{StaticResource C_BorderFocus}"/>
+
+    <SolidColorBrush x:Key="PrimaryBrush"      Color="{StaticResource C_Cyan}"/>
+    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="{StaticResource C_CyanDim}"/>
+    <SolidColorBrush x:Key="PrimaryDimBrush"   Color="{StaticResource C_CyanGlow}"/>
+
+    <SolidColorBrush x:Key="EmeraldBrush"      Color="{StaticResource C_Emerald}"/>
+    <SolidColorBrush x:Key="EmeraldDimBrush"   Color="{StaticResource C_EmeraldDim}"/>
+    <SolidColorBrush x:Key="AmberBrush"        Color="{StaticResource C_Amber}"/>
+    <SolidColorBrush x:Key="AmberDimBrush"     Color="{StaticResource C_AmberDim}"/>
+    <SolidColorBrush x:Key="DangerBrush"       Color="{StaticResource C_Danger}"/>
+    <SolidColorBrush x:Key="DangerDimBrush"    Color="{StaticResource C_DangerDim}"/>
+    <SolidColorBrush x:Key="VioletBrush"       Color="{StaticResource C_Violet}"/>
+
+    <SolidColorBrush x:Key="TextPrimaryBrush"  Color="{StaticResource C_TextPrimary}"/>
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource C_TextSecondary}"/>
+    <SolidColorBrush x:Key="TextMutedBrush"    Color="{StaticResource C_TextMuted}"/>
+    <SolidColorBrush x:Key="TextInverseBrush"  Color="{StaticResource C_TextInverse}"/>
+
+    <!-- COMPAT aliases (old names → new) -->
+    <SolidColorBrush x:Key="PrimaryAccentBrush" Color="{StaticResource C_Cyan}"/>
+
+    <!-- ═══ GRADIENT BRUSHES ═══ -->
+    <LinearGradientBrush x:Key="SidebarGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#0C1018" Offset="0"/>
+        <GradientStop Color="#080D14" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="CyanGlowGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#2000D4FF" Offset="0"/>
+        <GradientStop Color="#0000D4FF" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="EmeraldGlowGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#2010B981" Offset="0"/>
+        <GradientStop Color="#0010B981" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="AmberGlowGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#20F59E0B" Offset="0"/>
+        <GradientStop Color="#00F59E0B" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="DangerGlowGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#20EF4444" Offset="0"/>
+        <GradientStop Color="#00EF4444" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="VioletGlowGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#208B5CF6" Offset="0"/>
+        <GradientStop Color="#008B5CF6" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="CardBorderGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#2A3550" Offset="0"/>
+        <GradientStop Color="#151D2E" Offset="1"/>
+    </LinearGradientBrush>
+
 </ResourceDictionary>

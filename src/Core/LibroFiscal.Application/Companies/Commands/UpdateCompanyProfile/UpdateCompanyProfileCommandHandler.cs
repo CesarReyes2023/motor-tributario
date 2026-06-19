@@ -15,13 +15,16 @@ internal sealed class UpdateCompanyProfileCommandHandler : ICommandHandler<Updat
 {
     private readonly IRepository<Company, CompanyId> _companyRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly LibroFiscal.Application.Abstractions.Services.IEncryptionService _encryptionService;
 
     public UpdateCompanyProfileCommandHandler(
         IRepository<Company, CompanyId> companyRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        LibroFiscal.Application.Abstractions.Services.IEncryptionService encryptionService)
     {
         _companyRepository = companyRepository;
         _unitOfWork = unitOfWork;
+        _encryptionService = encryptionService;
     }
 
     public async Task<Result> Handle(
@@ -38,8 +41,21 @@ internal sealed class UpdateCompanyProfileCommandHandler : ICommandHandler<Updat
         if (direccionResult.IsFailure) return direccionResult;
         var direccion = direccionResult.Value;
 
-        var companies = await _companyRepository.FindAsync(c => c.IsActive, cancellationToken);
-        var company = companies.Count > 0 ? companies[0] : null;
+        Company? company = null;
+        
+        if (!string.IsNullOrEmpty(request.Id))
+        {
+            if (System.Guid.TryParse(request.Id, out var parsedId))
+            {
+                company = await _companyRepository.GetByIdAsync(new CompanyId(parsedId), cancellationToken);
+            }
+        }
+        else
+        {
+            // Para mantener compatibilidad con creación de primera empresa en MVP
+            var companies = await _companyRepository.FindAsync(c => c.IsActive, cancellationToken);
+            company = companies.Count > 0 ? companies[0] : null;
+        }
 
         if (company is null)
         {
@@ -58,21 +74,18 @@ internal sealed class UpdateCompanyProfileCommandHandler : ICommandHandler<Updat
 
             if (newCompanyResult.IsFailure) return newCompanyResult;
 
-            _companyRepository.Add(newCompanyResult.Value);
+            var newCompany = newCompanyResult.Value;
+            newCompany.UpdateApiCredentials(_encryptionService.Encrypt(request.ApiPassword));
+            if (!string.IsNullOrEmpty(request.LogoPath))
+            {
+                newCompany.UpdateLogo(request.LogoPath);
+            }
+
+            _companyRepository.Add(newCompany);
         }
         else
         {
-            // Entity Framework tracks the entity, we would normally update properties here
-            // However, the Domain model for Company currently lacks an Update method.
-            // We should either add an Update method or recreate if it's not possible.
-            // Since Company has private setters, let's assume we can add an Update method to it later,
-            // but for now let's just deactivate the old one and create a new one, OR we can add the Update method.
-            // Wait, let's just deactivate the old and create a new one if we don't have an Update method.
-            // Actually, in a real app, I'd modify Company.cs.
-            company.Deactivate();
-            _companyRepository.Update(company);
-
-            var newCompanyResult = Company.Create(
+            company.UpdateProfile(
                 request.LegalName,
                 request.TradeName,
                 nitResult.Value,
@@ -81,12 +94,16 @@ internal sealed class UpdateCompanyProfileCommandHandler : ICommandHandler<Updat
                 request.EconomicActivityDescription,
                 request.Phone,
                 request.Email,
-                direccion,
-                company.Ambiente);
+                direccion
+            );
+            
+            company.UpdateApiCredentials(_encryptionService.Encrypt(request.ApiPassword));
+            if (request.LogoPath != null)
+            {
+                company.UpdateLogo(request.LogoPath);
+            }
 
-            if (newCompanyResult.IsFailure) return newCompanyResult;
-
-            _companyRepository.Add(newCompanyResult.Value);
+            _companyRepository.Update(company);
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

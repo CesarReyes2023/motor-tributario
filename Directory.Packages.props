@@ -5,6 +5,7 @@
   <!-- <PackageReference Include="X" /> without Version attribute.  -->
   <!-- ============================================================ -->
   <ItemGroup Label="Core Framework">
+    <PackageVersion Include="Meziantou.Framework.Win32.CredentialManager" Version="2.0.1" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
@@ -16,6 +17,7 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+    <PackageVersion Include="Npgsql" Version="10.0.3" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
     <PackageVersion Include="PdfPig" Version="0.1.14" />
     <PackageVersion Include="Tesseract" Version="5.2.0" />
@@ -37,7 +39,7 @@
   <ItemGroup Label="Resilience">
     <PackageVersion Include="Polly" Version="8.5.0" />
     <PackageVersion Include="Polly.Extensions" Version="8.5.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="8.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.11.0" />
   </ItemGroup>
   <ItemGroup Label="Observability">

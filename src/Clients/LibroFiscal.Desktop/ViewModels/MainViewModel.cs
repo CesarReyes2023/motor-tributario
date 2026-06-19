@@ -1,10 +1,19 @@
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LibroFiscal.Application.Abstractions.Services;
+using LibroFiscal.Application.Companies.Queries.GetActiveCompanies;
+using MediatR;
 
 namespace LibroFiscal.Desktop.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
+    private readonly IMediator _mediator;
+    private readonly IEmpresaActivaService _empresaActivaService;
+    private readonly IErrorLogger _errorLogger;
     private readonly DashboardViewModel _dashboardViewModel;
     private readonly CompanyViewModel _companyViewModel;
     private readonly DteListViewModel _dteListViewModel;
@@ -13,11 +22,37 @@ public partial class MainViewModel : ObservableObject
     private readonly PurchasesViewModel _purchasesViewModel;
     private readonly VatBooksViewModel _vatBooksViewModel;
     private readonly IngestionViewModel _ingestionViewModel;
+    private readonly SettingsViewModel _settingsViewModel;
+    private readonly ICurrentUserService _currentUserService;
 
     [ObservableProperty]
-    private ObservableObject _currentViewModel;
+    private ObservableObject _currentViewModel = null!;
+
+    public string CurrentUserName => _currentUserService.Username ?? "Usuario";
+    
+    [ObservableProperty]
+    private string _profilePicturePath = string.Empty;
+
+    [ObservableProperty]
+    private ObservableCollection<CompanyDto> _companies = new();
+
+    private CompanyDto? _selectedCompany;
+    public CompanyDto? SelectedCompany
+    {
+        get => _selectedCompany;
+        set
+        {
+            if (SetProperty(ref _selectedCompany, value) && value != null)
+            {
+                _empresaActivaService.CambiarEmpresa(value.Id);
+            }
+        }
+    }
 
     public MainViewModel(
+        IMediator mediator,
+        IEmpresaActivaService empresaActivaService,
+        IErrorLogger errorLogger,
         DashboardViewModel dashboardViewModel, 
         CompanyViewModel companyViewModel,
         DteListViewModel dteListViewModel,
@@ -25,8 +60,13 @@ public partial class MainViewModel : ObservableObject
         OcrScannerViewModel ocrScannerViewModel,
         PurchasesViewModel purchasesViewModel,
         VatBooksViewModel vatBooksViewModel,
-        IngestionViewModel ingestionViewModel)
+        IngestionViewModel ingestionViewModel,
+        SettingsViewModel settingsViewModel,
+        ICurrentUserService currentUserService)
     {
+        _mediator = mediator;
+        _empresaActivaService = empresaActivaService;
+        _errorLogger = errorLogger;
         _dashboardViewModel = dashboardViewModel;
         _companyViewModel = companyViewModel;
         _dteListViewModel = dteListViewModel;
@@ -35,12 +75,49 @@ public partial class MainViewModel : ObservableObject
         _purchasesViewModel = purchasesViewModel;
         _vatBooksViewModel = vatBooksViewModel;
         _ingestionViewModel = ingestionViewModel;
+        _settingsViewModel = settingsViewModel;
+        _currentUserService = currentUserService;
+
+        _profilePicturePath = _currentUserService.ProfilePicturePath ?? string.Empty;
+        _currentUserService.ProfilePictureChanged += (s, e) =>
+        {
+            ProfilePicturePath = _currentUserService.ProfilePicturePath ?? string.Empty;
+        };
         
         // Setup cross-VM navigation
         _dteListViewModel.NavigateToCreateDteAction = NavigateToCreateDte;
         
         // Start on Dashboard
-        _currentViewModel = _dashboardViewModel;
+        CurrentViewModel = _dashboardViewModel;
+
+        // Load Companies
+        _ = LoadCompaniesAsync();
+    }
+
+    private async Task LoadCompaniesAsync()
+    {
+        try
+        {
+            var result = await _mediator.Send(new GetActiveCompaniesQuery());
+            if (result.IsSuccess)
+            {
+                Companies.Clear();
+                foreach (var company in result.Value)
+                {
+                    Companies.Add(company);
+                }
+
+                if (Companies.Any())
+                {
+                    SelectedCompany = Companies.First();
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            _errorLogger.LogError("startup", $"Error cargando empresas al inicio: {ex}");
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] Error loading companies: {ex.Message}");
+        }
     }
 
     [RelayCommand]
@@ -79,6 +156,9 @@ public partial class MainViewModel : ObservableObject
         CurrentViewModel = _vatBooksViewModel;
         _ = _vatBooksViewModel.GenerateReportAsync();
     }
+
+    [RelayCommand]
+    private void NavigateToSettings() => CurrentViewModel = _settingsViewModel;
 
 #pragma warning disable CA1822
     [RelayCommand]

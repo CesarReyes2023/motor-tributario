@@ -30,18 +30,22 @@ internal sealed class GetVatSalesTaxpayerBookQueryHandler : IQueryHandler<GetVat
             return Result.Failure<IReadOnlyList<VatSalesTaxpayerDto>>(periodResult.Error);
         }
 
-        FiscalPeriod period = periodResult.Value;
+        // Obtener ventas del mes y año especificado
+        var startDate = new System.DateTimeOffset(new System.DateTime(request.Year, request.Month, 1), System.TimeSpan.Zero);
+        var endDate = startDate.AddMonths(1);
+
+        var companyId = new CompanyId(request.CompanyId);
 
         // Fetch DTEs of type "03" (CCF)
         var dtes = await _dteRepository.FindAsync(
-            d => d.TipoDte.Codigo == "03" &&
-                 d.FechaEmision >= period.StartDate &&
-                 d.FechaEmision <= period.EndDate,
+            d => d.CompanyId == companyId &&
+                 d.TipoDte.Codigo == "03" &&
+                 d.FechaEmision >= startDate &&
+                 d.FechaEmision < endDate,
+            q => q.OrderBy(d => d.FechaEmision).ThenBy(d => d.NumeroControl),
             cancellationToken);
 
         var sales = dtes
-            .OrderBy(d => d.FechaEmision)
-            .ThenBy(d => d.NumeroControl.Value)
             .Select(d => new VatSalesTaxpayerDto
             {
                 EmisionDate = d.FechaEmision,

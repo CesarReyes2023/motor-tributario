@@ -37,6 +37,10 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.IsActive).IsRequired();
 
+        builder.Property(u => u.ProfilePicturePath)
+            .HasMaxLength(500)
+            .IsRequired(false);
+
         // Unique index on username
         builder.HasIndex(u => u.Username).IsUnique();
 

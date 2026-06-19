@@ -46,9 +46,20 @@ public class Repository<TEntity, TId> : IRepository<TEntity, TId>
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
-        return await DbSet
-            .Where(predicate)
-            .ToListAsync(cancellationToken);
+        return await DbSet.Where(predicate).ToListAsync(cancellationToken);
+    }
+
+    public virtual async Task<IReadOnlyList<TEntity>> FindAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy,
+        CancellationToken cancellationToken = default)
+    {
+        var query = DbSet.Where(predicate);
+        if (orderBy != null)
+        {
+            query = orderBy(query);
+        }
+        return await query.ToListAsync(cancellationToken);
     }
 
     public virtual async Task<bool> AnyAsync(

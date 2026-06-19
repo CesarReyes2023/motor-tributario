@@ -18,4 +18,12 @@ public partial class LoginView : Window
         DialogResult = true;
         Close();
     }
+
+    private void TxtPassword_PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is LoginViewModel viewModel && sender is System.Windows.Controls.PasswordBox pb)
+        {
+            viewModel.Password = pb.Password;
+        }
+    }
 }

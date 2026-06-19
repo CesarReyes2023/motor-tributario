@@ -25,6 +25,8 @@ public sealed class Company : AuditableAggregateRoot<CompanyId>
     public string Correo { get; private set; } = string.Empty;
     public DireccionFiscal DireccionFiscal { get; private set; } = null!;
     public AmbienteHacienda Ambiente { get; private set; } = null!;
+    public string ApiPassword { get; private set; } = string.Empty;
+    public string? LogoPath { get; private set; }
     public bool IsActive { get; private set; }
 
     /// <summary>Establishments (sucursales/puntos de venta) of this company.</summary>
@@ -42,7 +44,8 @@ public sealed class Company : AuditableAggregateRoot<CompanyId>
         string telefono,
         string correo,
         DireccionFiscal direccionFiscal,
-        AmbienteHacienda ambiente)
+        AmbienteHacienda ambiente,
+        string? logoPath = null)
     {
         if (string.IsNullOrWhiteSpace(razonSocial))
             return Error.Validation("Company.RazonSocialVacia", "La razón social es obligatoria.");
@@ -60,6 +63,7 @@ public sealed class Company : AuditableAggregateRoot<CompanyId>
             Correo = correo,
             DireccionFiscal = direccionFiscal,
             Ambiente = ambiente,
+            LogoPath = logoPath,
             IsActive = true
         };
 
@@ -97,6 +101,38 @@ public sealed class Company : AuditableAggregateRoot<CompanyId>
     public void UpdateFiscalConfig(AmbienteHacienda ambiente)
     {
         Ambiente = ambiente;
+    }
+
+    public void UpdateApiCredentials(string apiPassword)
+    {
+        ApiPassword = apiPassword;
+    }
+    
+    public void UpdateLogo(string? logoPath)
+    {
+        LogoPath = logoPath;
+    }
+
+    public void UpdateProfile(
+        string razonSocial,
+        string nombreComercial,
+        Nit nit,
+        Nrc nrc,
+        string codigoActividad,
+        string descripcionActividad,
+        string telefono,
+        string correo,
+        DireccionFiscal direccionFiscal)
+    {
+        RazonSocial = razonSocial;
+        NombreComercial = nombreComercial;
+        Nit = nit;
+        Nrc = nrc;
+        CodigoActividad = codigoActividad;
+        DescripcionActividad = descripcionActividad;
+        Telefono = telefono;
+        Correo = correo;
+        DireccionFiscal = direccionFiscal;
     }
 }
 

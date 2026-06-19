@@ -4,5 +4,6 @@ using System.Collections.Generic;
 namespace LibroFiscal.Application.Taxes.Queries.GetVatSalesTaxpayerBook;
 
 public sealed record GetVatSalesTaxpayerBookQuery(
+    System.Guid CompanyId,
     int Year,
     int Month) : IQuery<IReadOnlyList<VatSalesTaxpayerDto>>;

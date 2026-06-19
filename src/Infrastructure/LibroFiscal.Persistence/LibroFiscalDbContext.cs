@@ -29,7 +29,7 @@ public sealed class LibroFiscalDbContext : DbContext, IUnitOfWork
     public DbSet<LibroIva> LibrosIva => Set<LibroIva>();
     public DbSet<User> Users => Set<User>();
     public DbSet<TaxRule> TaxRules => Set<TaxRule>();
-
+    
     // Phase 12: Accounting & Purchases
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
@@ -38,7 +38,7 @@ public sealed class LibroFiscalDbContext : DbContext, IUnitOfWork
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
+        
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LibroFiscalDbContext).Assembly);
     }
 

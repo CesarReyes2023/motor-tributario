@@ -8,24 +8,51 @@ using MediatR;
 
 namespace LibroFiscal.Desktop.ViewModels;
 
-public partial class DteListViewModel : ObservableObject
+public partial class DteListViewModel : ObservableObject, IDisposable
 {
     private readonly IMediator _mediator;
+    private readonly LibroFiscal.Application.Abstractions.Services.IEmpresaActivaService _empresaActivaService;
+    private readonly LibroFiscal.Application.Abstractions.Services.IDialogService _dialogService;
+    private readonly LibroFiscal.Application.Abstractions.Services.IErrorLogger _errorLogger;
     public Action? NavigateToCreateDteAction { get; set; }
 
     [ObservableProperty]
     private ObservableCollection<DteSummaryDto> _dtes = new();
 
-    public DteListViewModel(IMediator mediator)
+    public DteListViewModel(
+        IMediator mediator,
+        LibroFiscal.Application.Abstractions.Services.IEmpresaActivaService empresaActivaService,
+        LibroFiscal.Application.Abstractions.Services.IDialogService dialogService,
+        LibroFiscal.Application.Abstractions.Services.IErrorLogger errorLogger)
     {
         _mediator = mediator;
+        _empresaActivaService = empresaActivaService;
+        _dialogService = dialogService;
+        _errorLogger = errorLogger;
+        
+        _empresaActivaService.EmpresaCambiadaEvent += OnEmpresaCambiada;
+    }
+
+    private void OnEmpresaCambiada(object? sender, Guid e) => _ = LoadDtesAsync();
+
+    public void Dispose()
+    {
+        _empresaActivaService.EmpresaCambiadaEvent -= OnEmpresaCambiada;
+        GC.SuppressFinalize(this);
     }
 
     public async Task LoadDtesAsync()
     {
+        var companyId = _empresaActivaService.EmpresaActualId;
+        if (companyId == null)
+        {
+            Dtes.Clear();
+            return;
+        }
+
         try
         {
-            var result = await _mediator.Send(new GetDtesQuery());
+            var result = await _mediator.Send(new GetDtesQuery(companyId.Value));
             if (result.IsSuccess)
             {
                 Dtes.Clear();
@@ -36,12 +63,12 @@ public partial class DteListViewModel : ObservableObject
             }
             else
             {
-                System.IO.File.WriteAllText("error_list.txt", "Query failed: " + result.Error.Code + " - " + result.Error.Message);
+                _errorLogger.LogError("dte_list", $"Query failed: {result.Error.Code} - {result.Error.Message}");
             }
         }
         catch (Exception ex)
         {
-            System.IO.File.WriteAllText("error_list.txt", ex.ToString());
+            _errorLogger.LogError("dte_list", ex);
         }
     }
 
@@ -74,12 +101,12 @@ public partial class DteListViewModel : ObservableObject
             }
             else
             {
-                System.Windows.MessageBox.Show($"Error generando PDF: {result.Error.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                _dialogService.ShowError($"Error generando PDF: {result.Error.Message}");
             }
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"Ocurrió un error inesperado: {ex.Message}", "Error Crítico", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            _dialogService.ShowError($"Ocurrió un error inesperado: {ex.Message}");
         }
     }
 }

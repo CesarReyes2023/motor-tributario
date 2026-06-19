@@ -33,6 +33,6 @@ public sealed class AuthenticateUserQueryHandler : IQueryHandler<AuthenticateUse
             return Result.Failure<AuthenticationResultDto>(Error.Unauthorized("Auth.Failed", "Usuario o contraseña incorrectos."));
         }
 
-        return new AuthenticationResultDto(user.Id.Value, user.Username, user.Role.Name);
+        return new AuthenticationResultDto(user.Id.Value, user.Username, user.Role.Name, user.ProfilePicturePath);
     }
 }

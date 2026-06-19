@@ -15,6 +15,7 @@ public static class DependencyInjection
         services.AddTransient<IDtePdfGenerator, LibroFiscal.Integrations.Pdf.QuestPdfGeneratorService>();
         services.AddTransient<LibroFiscal.Application.OCR.Services.IOcrScannerService, LibroFiscal.Integrations.Ocr.TesseractOcrScannerService>();
         services.AddTransient<IHaciendaF930ExportService, Hacienda.Exports.HaciendaF930ExportService>();
+        services.AddTransient<ISigningService, FirmadorService>();
 
         return services;
     }

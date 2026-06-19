@@ -15,6 +15,7 @@ namespace LibroFiscal.Integrations.Ocr;
 
 public sealed class TesseractOcrScannerService : IOcrScannerService
 {
+    private static readonly char[] _lineSeparators = ['\r', '\n'];
     private readonly string _tessDataPath;
 
     public TesseractOcrScannerService()
@@ -182,6 +183,25 @@ public sealed class TesseractOcrScannerService : IOcrScannerService
             }
         }
 
-        return new OcrResultDto(text, nit, nrc, total, iva, fecha);
+        // DTE or Document Number (e.g. DTE-03-XXXXX, Resolucion, Factura N°)
+        string? numeroDocumento = null;
+        var docMatch = Regex.Match(normalizedText, @"(?i)(?:dte|factura|resolucion|ticket|comprobante)(?:\s*(?:n[o°]?|#|número|numero))?\s*[:\-]?\s*([A-Z0-9\-]+)");
+        if (docMatch.Success)
+        {
+            numeroDocumento = docMatch.Groups[1].Value.Trim();
+        }
+
+        // Supplier Name: usually the first non-empty line
+        string? nombreProveedor = null;
+        var lines = text.Split(_lineSeparators, StringSplitOptions.RemoveEmptyEntries);
+        var possibleNameLine = lines.FirstOrDefault(l => !string.IsNullOrWhiteSpace(l) && l.Length > 3);
+        if (possibleNameLine != null)
+        {
+            nombreProveedor = possibleNameLine.Trim();
+            // Limpiar basura al inicio si la hubiera
+            nombreProveedor = Regex.Replace(nombreProveedor, @"^[^\w]+", "");
+        }
+
+        return new OcrResultDto(text, nit, nrc, total, iva, fecha, numeroDocumento, nombreProveedor);
     }
 }

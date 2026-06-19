@@ -31,19 +31,21 @@ internal sealed class GetVatSalesConsumerBookQueryHandler : IQueryHandler<GetVat
             return Result.Failure<IReadOnlyList<VatSalesConsumerDto>>(periodResult.Error);
         }
 
-        FiscalPeriod period = periodResult.Value;
+        var startDate = new DateTimeOffset(new DateTime(request.Year, request.Month, 1), TimeSpan.Zero);
+        var endDate = startDate.AddMonths(1);
+
+        var companyId = new CompanyId(request.CompanyId);
 
         // Fetch DTEs of type "01" (Factura) and "11" (Factura Exportacion - if we add it)
         var dtes = await _dteRepository.FindAsync(
-            d => (d.TipoDte.Codigo == "01" || d.TipoDte.Codigo == "11") &&
-                 d.FechaEmision >= period.StartDate &&
-                 d.FechaEmision <= period.EndDate,
+            d => d.CompanyId == companyId &&
+                 (d.TipoDte.Codigo == "01" || d.TipoDte.Codigo == "11") &&
+                 d.FechaEmision >= startDate &&
+                 d.FechaEmision < endDate,
+            q => q.OrderBy(d => d.FechaEmision).ThenBy(d => d.NumeroControl),
             cancellationToken);
 
-        var sales = dtes
-            .OrderBy(d => d.FechaEmision)
-            .ThenBy(d => d.NumeroControl.Value)
-            .ToList();
+        var sales = dtes.ToList();
 
         // Group by day to generate the report as it is usually required for Consumer Sales
         var groupedSales = sales

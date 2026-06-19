@@ -21,10 +21,13 @@ internal sealed class GetPurchasesQueryHandler : IQueryHandler<GetPurchasesQuery
 
     public async Task<Result<IReadOnlyList<PurchaseDto>>> Handle(GetPurchasesQuery request, CancellationToken cancellationToken)
     {
-        var purchases = await _purchaseRepository.FindAsync(p => true, cancellationToken);
+        var companyId = new CompanyId(request.CompanyId);
+        var purchases = await _purchaseRepository.FindAsync(
+            p => p.CompanyId == companyId, 
+            q => q.OrderByDescending(p => p.IssueDate),
+            cancellationToken);
 
         var dtos = purchases
-            .OrderByDescending(p => p.IssueDate)
             .Select(p => new PurchaseDto(
                 p.Id.Value,
                 p.SupplierNit,
