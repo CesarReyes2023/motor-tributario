@@ -121,7 +121,11 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void NavigateToDashboard() => CurrentViewModel = _dashboardViewModel;
+    private void NavigateToDashboard()
+    {
+        CurrentViewModel = _dashboardViewModel;
+        _ = _dashboardViewModel.LoadDashboardAsync();
+    }
 
     [RelayCommand]
     private void NavigateToCompanies() => CurrentViewModel = _companyViewModel;

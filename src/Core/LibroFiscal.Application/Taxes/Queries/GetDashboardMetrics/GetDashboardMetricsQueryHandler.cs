@@ -39,12 +39,12 @@ internal sealed class GetDashboardMetricsQueryHandler : IQueryHandler<GetDashboa
 
         // Fetch Sales (DTEs)
         var dtes = await _dteRepository.FindAsync(
-            d => d.CompanyId.Value == request.CompanyId && d.FechaEmision >= period.StartDate && d.FechaEmision <= period.EndDate,
+            d => d.CompanyId.Value == request.CompanyId,
             cancellationToken);
 
         // Fetch Purchases
         var purchases = await _purchaseRepository.FindAsync(
-            p => p.CompanyId.Value == request.CompanyId && p.IssueDate.Month == request.Month && p.IssueDate.Year == request.Year, 
+            p => p.CompanyId.Value == request.CompanyId, 
             cancellationToken);
 
         // Calculate Sales Metrics
