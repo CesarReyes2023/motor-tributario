@@ -24,6 +24,7 @@ public sealed class ImportSelectedDtesCommandHandler : ICommandHandler<ImportSel
     private readonly IEnumerable<IDteParserService> _parsers;
     private readonly IMediator _mediator;
     private readonly IRepository<LibroFiscal.Domain.Purchases.Entities.Purchase, LibroFiscal.Domain.Common.Ids.PurchaseId> _purchaseRepository;
+    private readonly IRepository<LibroFiscal.Domain.Sales.Entities.Sale, LibroFiscal.Domain.Common.Ids.SaleId> _saleRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public ImportSelectedDtesCommandHandler(
@@ -32,6 +33,7 @@ public sealed class ImportSelectedDtesCommandHandler : ICommandHandler<ImportSel
         IEnumerable<IDteParserService> parsers,
         IMediator mediator,
         IRepository<LibroFiscal.Domain.Purchases.Entities.Purchase, LibroFiscal.Domain.Common.Ids.PurchaseId> purchaseRepository,
+        IRepository<LibroFiscal.Domain.Sales.Entities.Sale, LibroFiscal.Domain.Common.Ids.SaleId> saleRepository,
         IUnitOfWork unitOfWork)
     {
         _companyRepository = companyRepository;
@@ -39,6 +41,7 @@ public sealed class ImportSelectedDtesCommandHandler : ICommandHandler<ImportSel
         _parsers = parsers;
         _mediator = mediator;
         _purchaseRepository = purchaseRepository;
+        _saleRepository = saleRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -66,6 +69,10 @@ public sealed class ImportSelectedDtesCommandHandler : ICommandHandler<ImportSel
             return Result.Failure<IngestionResultDto>(Error.Failure("Parser.NotFound", "No hay un parser de JSON configurado."));
 
         var purchasesToInsert = new List<LibroFiscal.Domain.Purchases.Entities.Purchase>();
+        var salesToInsert = new List<LibroFiscal.Domain.Sales.Entities.Sale>();
+
+        // Limpiar el NIT de la empresa (sin guiones)
+        var companyNitClean = company.Nit.Value.Replace("-", "");
 
         // 2. Descargar cada DTE seleccionado
         foreach (var dto in request.SelectedDtes)
@@ -93,32 +100,69 @@ public sealed class ImportSelectedDtesCommandHandler : ICommandHandler<ImportSel
             var extractedDtes = parseResult.Value;
             foreach (var dte in extractedDtes)
             {
-                var purchaseResult = LibroFiscal.Domain.Purchases.Entities.Purchase.Create(
-                    company.Id,
-                    dte.NitEmisor,
-                    dte.NrcEmisor,
-                    string.IsNullOrEmpty(dte.NrcEmisor) ? "Proveedor" : "Proveedor " + dte.NitEmisor,
-                    dte.FechaEmision.DateTime,
-                    dte.NumeroControl,
-                    dte.VentasGravadas + dte.VentasExentas,
-                    dte.MontoIva,
-                    dte.MontoTotal);
+                // Determinar si es emitido (Venta) o recibido (Compra)
+                var emisorNitClean = (dte.NitEmisor ?? "").Replace("-", "");
+                bool isSale = emisorNitClean == companyNitClean;
 
-                if (purchaseResult.IsSuccess)
+                if (isSale)
                 {
-                    purchasesToInsert.Add(purchaseResult.Value);
-                    inserted++;
-                }
-                else
-                {
-                    if (purchaseResult.Error.Code.Contains("Duplicate", StringComparison.OrdinalIgnoreCase))
+                    // Es un DTE Emitido por nosotros -> Se registra en Ventas
+                    var saleResult = LibroFiscal.Domain.Sales.Entities.Sale.Create(
+                        company.Id,
+                        dte.NitEmisor ?? "",
+                        dte.NrcEmisor ?? "",
+                        "Cliente " + (dte.NitEmisor ?? "Consumidor"), // Provisional
+                        dte.FechaEmision.DateTime,
+                        dte.NumeroControl,
+                        dte.VentasGravadas + dte.VentasExentas,
+                        dte.VentasExentas,
+                        dte.MontoIva,
+                        dte.MontoTotal);
+
+                    if (saleResult.IsSuccess)
                     {
-                        duplicates++;
+                        salesToInsert.Add(saleResult.Value);
+                        inserted++;
                     }
                     else
                     {
-                        errors++;
-                        errorMessages.Add($"Error al guardar compra sincronizada {dte.NumeroControl}: {purchaseResult.Error.Message}");
+                        if (saleResult.Error.Code.Contains("Duplicate", StringComparison.OrdinalIgnoreCase))
+                            duplicates++;
+                        else
+                        {
+                            errors++;
+                            errorMessages.Add($"Error al guardar venta sincronizada {dte.NumeroControl}: {saleResult.Error.Message}");
+                        }
+                    }
+                }
+                else
+                {
+                    // Es un DTE Recibido -> Se registra en Compras
+                    var purchaseResult = LibroFiscal.Domain.Purchases.Entities.Purchase.Create(
+                        company.Id,
+                        dte.NitEmisor ?? "",
+                        dte.NrcEmisor ?? "",
+                        string.IsNullOrEmpty(dte.NrcEmisor) ? "Proveedor" : "Proveedor " + (dte.NitEmisor ?? ""),
+                        dte.FechaEmision.DateTime,
+                        dte.NumeroControl,
+                        dte.VentasGravadas + dte.VentasExentas,
+                        dte.MontoIva,
+                        dte.MontoTotal);
+
+                    if (purchaseResult.IsSuccess)
+                    {
+                        purchasesToInsert.Add(purchaseResult.Value);
+                        inserted++;
+                    }
+                    else
+                    {
+                        if (purchaseResult.Error.Code.Contains("Duplicate", StringComparison.OrdinalIgnoreCase))
+                            duplicates++;
+                        else
+                        {
+                            errors++;
+                            errorMessages.Add($"Error al guardar compra sincronizada {dte.NumeroControl}: {purchaseResult.Error.Message}");
+                        }
                     }
                 }
             }
@@ -127,6 +171,15 @@ public sealed class ImportSelectedDtesCommandHandler : ICommandHandler<ImportSel
         if (purchasesToInsert.Count > 0)
         {
             _purchaseRepository.AddRange(purchasesToInsert);
+        }
+        
+        if (salesToInsert.Count > 0)
+        {
+            _saleRepository.AddRange(salesToInsert);
+        }
+
+        if (purchasesToInsert.Count > 0 || salesToInsert.Count > 0)
+        {
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
