@@ -44,6 +44,9 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         // Unique index on username
         builder.HasIndex(u => u.Username).IsUnique();
 
+        // AutoInclude for many-to-many relationship
+        builder.Navigation(u => u.CompanyAccesses).AutoInclude();
+
         // Seed data
         var adminId = new UserId(Guid.Parse("11111111-1111-1111-1111-111111111111"));
         builder.HasData(new

@@ -230,6 +230,34 @@ namespace LibroFiscal.Persistence.Migrations
                     b.ToTable("Establishments", (string)null);
                 });
 
+            modelBuilder.Entity("LibroFiscal.Domain.Companies.Entities.InvoiceTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("HtmlContent")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InvoiceTemplates", (string)null);
+                });
+
             modelBuilder.Entity("LibroFiscal.Domain.DTE.Entities.DteDocument", b =>
                 {
                     b.Property<Guid>("Id")
@@ -430,6 +458,64 @@ namespace LibroFiscal.Persistence.Migrations
                     b.ToTable("Purchases", (string)null);
                 });
 
+            modelBuilder.Entity("LibroFiscal.Domain.Sales.Entities.Sale", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("CustomerNit")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("CustomerNrc")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("DocumentNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("ExemptAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<DateTimeOffset>("IssueDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal>("TaxableAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Sales", (string)null);
+                });
+
             modelBuilder.Entity("LibroFiscal.Domain.Taxes.Entities.TaxRule", b =>
                 {
                     b.Property<Guid>("Id")
@@ -479,7 +565,7 @@ namespace LibroFiscal.Persistence.Migrations
                         {
                             Id = new Guid("a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1"),
                             Code = "IVA",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 6, 19, 3, 1, 35, 900, DateTimeKind.Unspecified).AddTicks(7212), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 6, 20, 21, 52, 19, 827, DateTimeKind.Unspecified).AddTicks(1426), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "System",
                             IsActive = true,
                             Name = "Impuesto al Valor Agregado",
@@ -490,7 +576,7 @@ namespace LibroFiscal.Persistence.Migrations
                         {
                             Id = new Guid("b2b2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2"),
                             Code = "RET_1",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 6, 19, 3, 1, 35, 900, DateTimeKind.Unspecified).AddTicks(7220), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 6, 20, 21, 52, 19, 827, DateTimeKind.Unspecified).AddTicks(1437), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "System",
                             IsActive = false,
                             Name = "Retención Gran Contribuyente",
@@ -541,6 +627,19 @@ namespace LibroFiscal.Persistence.Migrations
                             Role = 1,
                             Username = "admin"
                         });
+                });
+
+            modelBuilder.Entity("LibroFiscal.Domain.Users.Entities.UserCompanyAccess", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("UserId", "CompanyId");
+
+                    b.ToTable("UserCompanyAccesses", (string)null);
                 });
 
             modelBuilder.Entity("LibroFiscal.Domain.Accounting.Entities.Account", b =>
@@ -1041,6 +1140,15 @@ namespace LibroFiscal.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("LibroFiscal.Domain.Users.Entities.UserCompanyAccess", b =>
+                {
+                    b.HasOne("LibroFiscal.Domain.Users.Entities.User", null)
+                        .WithMany("CompanyAccesses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("LibroFiscal.Domain.Accounting.Entities.Account", b =>
                 {
                     b.Navigation("SubAccounts");
@@ -1054,6 +1162,11 @@ namespace LibroFiscal.Persistence.Migrations
             modelBuilder.Entity("LibroFiscal.Domain.Companies.Entities.Company", b =>
                 {
                     b.Navigation("Establishments");
+                });
+
+            modelBuilder.Entity("LibroFiscal.Domain.Users.Entities.User", b =>
+                {
+                    b.Navigation("CompanyAccesses");
                 });
 #pragma warning restore 612, 618
         }

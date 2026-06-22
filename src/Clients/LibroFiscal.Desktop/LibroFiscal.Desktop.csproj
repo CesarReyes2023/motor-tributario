@@ -26,6 +26,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Meziantou.Framework.Win32.CredentialManager" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
   </ItemGroup>
 
   <ItemGroup>

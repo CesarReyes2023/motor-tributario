@@ -1,6 +1,7 @@
 using LibroFiscal.Domain.Users.Enums;
 using LibroFiscal.Domain.Users.Ids;
 using LibroFiscal.SharedKernel.Primitives;
+using System.Collections.Generic;
 
 namespace LibroFiscal.Domain.Users.Entities;
 
@@ -25,6 +26,9 @@ public sealed class User : AggregateRoot<UserId>
     public string? ProfilePicturePath { get; private set; }
     public bool IsActive { get; private set; }
 
+    private readonly List<UserCompanyAccess> _companyAccesses = new();
+    public IReadOnlyCollection<UserCompanyAccess> CompanyAccesses => _companyAccesses.AsReadOnly();
+
     public static User Create(string username, string passwordHash, UserRole role)
     {
         return new User(UserId.New(), username, passwordHash, role);
@@ -43,5 +47,18 @@ public sealed class User : AggregateRoot<UserId>
     public void UpdateProfilePicture(string? profilePicturePath)
     {
         ProfilePicturePath = profilePicturePath;
+    }
+
+    public void AssignCompany(LibroFiscal.Domain.Common.Ids.CompanyId companyId)
+    {
+        if (!_companyAccesses.Exists(c => c.CompanyId == companyId))
+        {
+            _companyAccesses.Add(UserCompanyAccess.Create(Id, companyId));
+        }
+    }
+
+    public void RemoveCompany(LibroFiscal.Domain.Common.Ids.CompanyId companyId)
+    {
+        _companyAccesses.RemoveAll(c => c.CompanyId == companyId);
     }
 }

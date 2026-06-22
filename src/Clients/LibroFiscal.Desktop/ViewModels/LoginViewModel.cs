@@ -51,7 +51,7 @@ public sealed partial class LoginViewModel : ObservableObject
 
             if (result.IsSuccess)
             {
-                _currentUserService.SetUser(result.Value.UserId, result.Value.Username, result.Value.ProfilePicturePath);
+                _currentUserService.SetUser(result.Value.UserId, result.Value.Username, result.Value.ProfilePicturePath, result.Value.RoleName);
                 LoginSuccessful?.Invoke(this, EventArgs.Empty);
             }
             else

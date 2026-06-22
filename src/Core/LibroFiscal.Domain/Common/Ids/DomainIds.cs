@@ -44,13 +44,6 @@ public sealed record AuditEntryId(Guid Value) : StronglyTypedId<Guid>(Value)
     public static AuditEntryId From(Guid value) => new(value);
 }
 
-/// <summary>Strongly-typed identifier for User.</summary>
-public sealed record UserId(Guid Value) : StronglyTypedId<Guid>(Value)
-{
-    public static UserId New() => new(Guid.NewGuid());
-    public static UserId From(Guid value) => new(value);
-}
-
 /// <summary>Strongly-typed identifier for Establishment (Sucursal/Punto de venta).</summary>
 public sealed record EstablishmentId(Guid Value) : StronglyTypedId<Guid>(Value)
 {
@@ -77,4 +70,18 @@ public sealed record PurchaseId(Guid Value) : StronglyTypedId<Guid>(Value)
 {
     public static PurchaseId New() => new(Guid.NewGuid());
     public static PurchaseId From(Guid value) => new(value);
+}
+
+/// <summary>Strongly-typed identifier for Sale (Venta).</summary>
+public sealed record SaleId(Guid Value) : StronglyTypedId<Guid>(Value)
+{
+    public static SaleId New() => new(Guid.NewGuid());
+    public static SaleId From(Guid value) => new(value);
+}
+
+/// <summary>Strongly-typed identifier for Invoice HTML Template.</summary>
+public sealed record InvoiceTemplateId(Guid Value) : StronglyTypedId<Guid>(Value)
+{
+    public static InvoiceTemplateId New() => new(Guid.NewGuid());
+    public static InvoiceTemplateId From(Guid value) => new(value);
 }

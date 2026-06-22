@@ -19,6 +19,7 @@
     </WindowChrome.WindowChrome>
 
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <!-- ViewModel → View routing -->
         <DataTemplate DataType="{x:Type viewmodels:DashboardViewModel}">
             <views:DashboardView/>
@@ -38,6 +39,9 @@
         <DataTemplate DataType="{x:Type viewmodels:PurchasesViewModel}">
             <views:PurchasesView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:SalesViewModel}">
+            <views:SalesView/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type viewmodels:VatBooksViewModel}">
             <views:VatBooksView/>
         </DataTemplate>
@@ -46,6 +50,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type viewmodels:SettingsViewModel}">
             <views:SettingsView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewmodels:UsersManagementViewModel}">
+            <views:UsersManagementView/>
         </DataTemplate>
 
         <!-- NAV BUTTON — Custom RadioButton as nav item -->
@@ -280,13 +287,19 @@
                                 <TextBlock Text="{Binding CurrentUserName}"
                                            FontWeight="SemiBold" FontSize="13"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                    <Ellipse Width="6" Height="6"
-                                             Fill="{DynamicResource EmeraldBrush}"
-                                             VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                    <TextBlock Text="Enterprise" FontSize="10"
-                                               Foreground="{DynamicResource TextMutedBrush}"/>
-                                </StackPanel>
+                                
+                                <ComboBox ItemsSource="{Binding Companies}" 
+                                          DisplayMemberPath="TradeName" 
+                                          SelectedItem="{Binding SelectedCompany, Mode=TwoWay}"
+                                          Margin="0,4,0,0"
+                                          Height="22" FontSize="11" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextMutedBrush}">
+                                    <ComboBox.ItemContainerStyle>
+                                        <Style TargetType="ComboBoxItem">
+                                            <Setter Property="Background" Value="{DynamicResource BgAppBrush}"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+                                        </Style>
+                                    </ComboBox.ItemContainerStyle>
+                                </ComboBox>
                             </StackPanel>
 
                             <!-- Settings icon -->
@@ -339,6 +352,10 @@
 
                             <!-- CONTABILIDAD -->
                             <TextBlock Text="CONTABILIDAD" Style="{StaticResource NavGroupLabel}"/>
+                            <RadioButton Content="Libro de Ventas"
+                                         Tag="{StaticResource Icon_Book}"
+                                         Style="{StaticResource NavItem}"
+                                         Command="{Binding NavigateToSalesCommand}"/>
                             <RadioButton Content="Libro de Compras"
                                          Tag="{StaticResource Icon_Cart}"
                                          Style="{StaticResource NavItem}"
@@ -347,6 +364,15 @@
                                          Tag="{StaticResource Icon_Book}"
                                          Style="{StaticResource NavItem}"
                                          Command="{Binding NavigateToVatBooksCommand}"/>
+
+                            <!-- ADMINISTRACIÓN (Visible solo para Admin) -->
+                            <StackPanel Visibility="{Binding IsSuperAdmin, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="ADMINISTRACIÓN" Style="{StaticResource NavGroupLabel}" Margin="20,15,20,5"/>
+                                <RadioButton Content="Usuarios"
+                                             Tag="{StaticResource Icon_Settings}"
+                                             Style="{StaticResource NavItem}"
+                                             Command="{Binding NavigateToUsersManagementCommand}"/>
+                            </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
 

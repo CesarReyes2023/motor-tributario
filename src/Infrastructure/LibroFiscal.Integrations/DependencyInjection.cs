@@ -13,6 +13,7 @@ public static class DependencyInjection
         // Registrar Parsers de Ingesta Masiva
         services.AddScoped<LibroFiscal.Application.DteIngestion.Services.IDteParserService, Hacienda.Ingestion.HaciendaJsonParserService>();
         services.AddTransient<IDtePdfGenerator, LibroFiscal.Integrations.Pdf.QuestPdfGeneratorService>();
+        services.AddTransient<IHtmlToPdfGenerator, LibroFiscal.Integrations.Pdf.HtmlToPdfGenerator>();
         services.AddTransient<LibroFiscal.Application.OCR.Services.IOcrScannerService, LibroFiscal.Integrations.Ocr.TesseractOcrScannerService>();
         services.AddTransient<IHaciendaF930ExportService, Hacienda.Exports.HaciendaF930ExportService>();
         services.AddTransient<ISigningService, FirmadorService>();

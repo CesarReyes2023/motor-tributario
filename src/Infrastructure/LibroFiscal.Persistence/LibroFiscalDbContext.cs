@@ -11,6 +11,7 @@ using LibroFiscal.Application.Abstractions.Services;
 using LibroFiscal.Domain.Taxes.Entities;
 using LibroFiscal.Domain.Accounting.Entities;
 using LibroFiscal.Domain.Purchases.Entities;
+using LibroFiscal.Domain.Sales.Entities;
 
 namespace LibroFiscal.Persistence;
 
@@ -28,12 +29,17 @@ public sealed class LibroFiscalDbContext : DbContext, IUnitOfWork
     public DbSet<DteDocument> Dtes => Set<DteDocument>();
     public DbSet<LibroIva> LibrosIva => Set<LibroIva>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<UserCompanyAccess> UserCompanyAccesses => Set<UserCompanyAccess>();
     public DbSet<TaxRule> TaxRules => Set<TaxRule>();
     
     // Phase 12: Accounting & Purchases
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
     public DbSet<Purchase> Purchases => Set<Purchase>();
+
+    // Phase 13: Sales & Custom Invoices
+    public DbSet<Sale> Sales => Set<Sale>();
+    public DbSet<InvoiceTemplate> InvoiceTemplates => Set<InvoiceTemplate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

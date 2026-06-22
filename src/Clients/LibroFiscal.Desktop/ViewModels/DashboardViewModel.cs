@@ -42,6 +42,12 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
+    [ObservableProperty]
+    private System.Collections.Generic.List<MonthlyMetricDto> _monthlyPurchases = new();
+
+    [ObservableProperty]
+    private TaxCompositionDto _taxComposition = new(0, 0, 0, 0);
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Used for XAML Binding")]
     public string CurrentMonthName => DateTime.Now.ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-ES")).ToUpper(new System.Globalization.CultureInfo("es-ES"));
 
@@ -88,6 +94,8 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                 PendingDtesCount = result.Value.PendingDtesCount;
                 SalesPercentage = result.Value.SalesPercentage;
                 PurchasesPercentage = result.Value.PurchasesPercentage;
+                MonthlyPurchases = result.Value.MonthlyPurchases;
+                TaxComposition = result.Value.TaxComposition;
             }
             else
             {

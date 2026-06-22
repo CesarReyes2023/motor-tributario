@@ -3,7 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:LibroFiscal.Desktop.Converters"
              mc:Ignorable="d" d:DesignHeight="720" d:DesignWidth="1020">
+
+    <UserControl.Resources>
+        <converters:PercentageToWidthConverter x:Key="PercentageToWidthConverter"/>
+    </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="36,32,36,36">
@@ -13,6 +18,8 @@
                 <RowDefinition Height="Auto"/>  <!-- KPI Cards -->
                 <RowDefinition Height="28"/>    <!-- Spacer -->
                 <RowDefinition Height="Auto"/>  <!-- Chart row -->
+                <RowDefinition Height="28"/>    <!-- Spacer -->
+                <RowDefinition Height="Auto"/>  <!-- Analytics row -->
             </Grid.RowDefinitions>
 
             <!-- ════ HEADER ════ -->
@@ -269,7 +276,7 @@
                             <Border Grid.Column="1" Height="8" CornerRadius="4"
                                     Background="{DynamicResource BorderSubtleBrush}" Margin="12,0">
                                 <Border HorizontalAlignment="Left" CornerRadius="4"
-                                        Width="{Binding SalesPercentage, Mode=OneWay}">
+                                        Width="{Binding SalesPercentage, Mode=OneWay, Converter={StaticResource PercentageToWidthConverter}, ConverterParameter='300'}">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                             <GradientStop Color="#00D4FF" Offset="0"/>
@@ -299,7 +306,7 @@
                                     Background="{DynamicResource BorderSubtleBrush}" Margin="12,0">
                                 <Border HorizontalAlignment="Left" CornerRadius="4">
                                     <Border.Width>
-                                        <Binding Path="SalesPercentage" Mode="OneWay"/>
+                                        <Binding Path="PurchasesPercentage" Mode="OneWay" Converter="{StaticResource PercentageToWidthConverter}" ConverterParameter="300"/>
                                     </Border.Width>
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -343,6 +350,142 @@
                     </Grid>
                 </Grid>
             </Border>
+
+            <!-- ════ GRAPHICS SECTION (PHASE 2) ════ -->
+            <Grid Grid.Row="6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Bar Chart: Monthly Purchases -->
+                <Border Grid.Column="0"
+                        Background="{DynamicResource BgCardBrush}"
+                        BorderBrush="{DynamicResource BgBorderBrush}"
+                        BorderThickness="1" CornerRadius="10" Padding="24">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="20"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <StackPanel Grid.Row="0">
+                            <TextBlock Text="Tendencia de Compras" Style="{StaticResource TextLabel}"/>
+                            <TextBlock Text="Últimos 6 meses" FontSize="11" Foreground="{DynamicResource TextMutedBrush}"/>
+                        </StackPanel>
+
+                        <!-- ItemsControl for Bar Chart -->
+                        <ItemsControl Grid.Row="2" ItemsSource="{Binding MonthlyPurchases}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Rows="1" Columns="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="5,0" VerticalAlignment="Bottom" Height="150" ToolTip="{Binding Amount, StringFormat=C2}">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <!-- The Bar -->
+                                        <Border Grid.Row="0" Width="20" HorizontalAlignment="Center"
+                                                VerticalAlignment="Bottom"
+                                                CornerRadius="4,4,0,0"
+                                                Background="{DynamicResource VioletGlowGradient}">
+                                            <Border.Height>
+                                                <Binding Path="PercentageMax" Converter="{StaticResource PercentageToWidthConverter}" ConverterParameter="120"/>
+                                            </Border.Height>
+                                        </Border>
+                                        <!-- Label -->
+                                        <TextBlock Grid.Row="1" Text="{Binding MonthLabel}" 
+                                                   FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+
+                <!-- Horizontal Stacked Bar (Tax Composition) -->
+                <!-- ponytail: Shortcut taken: used horizontal stacked bar instead of literal donut to save 100 lines of math boilerplate. Upgrade path: add LiveCharts2 if strictly necessary. -->
+                <Border Grid.Column="2"
+                        Background="{DynamicResource BgCardBrush}"
+                        BorderBrush="{DynamicResource BgBorderBrush}"
+                        BorderThickness="1" CornerRadius="10" Padding="24">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <StackPanel Grid.Row="0">
+                            <TextBlock Text="Composición de Impuestos (Compras)" Style="{StaticResource TextLabel}"/>
+                            <TextBlock Text="Proyección estimada en base al IVA" FontSize="11" Foreground="{DynamicResource TextMutedBrush}"/>
+                        </StackPanel>
+
+                        <!-- The Stacked Bar -->
+                        <Border Grid.Row="2" Height="16" CornerRadius="8" ClipToBounds="True" VerticalAlignment="Top">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition>
+                                        <ColumnDefinition.Width>
+                                            <Binding Path="TaxComposition.IvaPercentage" Converter="{StaticResource PercentageToWidthConverter}" ConverterParameter="100*"/>
+                                        </ColumnDefinition.Width>
+                                    </ColumnDefinition>
+                                    <ColumnDefinition>
+                                        <ColumnDefinition.Width>
+                                            <Binding Path="TaxComposition.RentaPercentage" Converter="{StaticResource PercentageToWidthConverter}" ConverterParameter="100*"/>
+                                        </ColumnDefinition.Width>
+                                    </ColumnDefinition>
+                                    <ColumnDefinition>
+                                        <ColumnDefinition.Width>
+                                            <Binding Path="TaxComposition.FovialPercentage" Converter="{StaticResource PercentageToWidthConverter}" ConverterParameter="100*"/>
+                                        </ColumnDefinition.Width>
+                                    </ColumnDefinition>
+                                    <ColumnDefinition>
+                                        <ColumnDefinition.Width>
+                                            <Binding Path="TaxComposition.CotransPercentage" Converter="{StaticResource PercentageToWidthConverter}" ConverterParameter="100*"/>
+                                        </ColumnDefinition.Width>
+                                    </ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                
+                                <Border Grid.Column="0" Background="{DynamicResource EmeraldBrush}" ToolTip="{Binding TaxComposition.Iva, StringFormat=IVA: {0:C2}}"/>
+                                <Border Grid.Column="1" Background="{DynamicResource AmberBrush}" ToolTip="{Binding TaxComposition.Renta, StringFormat=Renta: {0:C2}}"/>
+                                <Border Grid.Column="2" Background="{DynamicResource PrimaryBrush}" ToolTip="{Binding TaxComposition.Fovial, StringFormat=FOVIAL: {0:C2}}"/>
+                                <Border Grid.Column="3" Background="{DynamicResource DangerBrush}" ToolTip="{Binding TaxComposition.Cotrans, StringFormat=COTRANS: {0:C2}}"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Legend -->
+                        <StackPanel Grid.Row="2" Margin="0,30,0,0">
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <Ellipse Grid.Column="0" Width="10" Height="10" Fill="{DynamicResource EmeraldBrush}" Margin="0,0,10,0"/>
+                                <TextBlock Grid.Column="1" Text="IVA (Crédito Fiscal)" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <TextBlock Grid.Column="2" Text="{Binding TaxComposition.Iva, StringFormat=C2}" Foreground="{DynamicResource EmeraldBrush}" FontWeight="SemiBold"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <Ellipse Grid.Column="0" Width="10" Height="10" Fill="{DynamicResource AmberBrush}" Margin="0,0,10,0"/>
+                                <TextBlock Grid.Column="1" Text="Retención Renta (Estimada)" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <TextBlock Grid.Column="2" Text="{Binding TaxComposition.Renta, StringFormat=C2}" Foreground="{DynamicResource AmberBrush}" FontWeight="SemiBold"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <Ellipse Grid.Column="0" Width="10" Height="10" Fill="{DynamicResource PrimaryBrush}" Margin="0,0,10,0"/>
+                                <TextBlock Grid.Column="1" Text="FOVIAL (Contribución)" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <TextBlock Grid.Column="2" Text="{Binding TaxComposition.Fovial, StringFormat=C2}" Foreground="{DynamicResource PrimaryBrush}" FontWeight="SemiBold"/>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+            
         </Grid>
     </ScrollViewer>
 </UserControl>

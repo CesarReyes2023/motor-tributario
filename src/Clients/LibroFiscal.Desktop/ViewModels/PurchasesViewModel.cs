@@ -3,8 +3,12 @@ using CommunityToolkit.Mvvm.Input;
 using LibroFiscal.Application.Purchases.Queries.GetPurchases;
 using MediatR;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Win32;
+using LibroFiscal.Desktop.Services;
 
 namespace LibroFiscal.Desktop.ViewModels;
 
@@ -72,6 +76,49 @@ public partial class PurchasesViewModel : ObservableObject, IDisposable
         catch (System.Exception ex)
         {
             ErrorMessage = $"Error al cargar compras: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExportToCsvAsync()
+    {
+        if (Purchases == null || Purchases.Count == 0)
+        {
+            ErrorMessage = "No hay datos para exportar.";
+            return;
+        }
+
+        try
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "Archivos CSV (*.csv)|*.csv",
+                Title = "Exportar Compras a CSV",
+                FileName = $"Compras_{DateTime.Now:yyyyMMdd_HHmmss}.csv"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                IsLoading = true;
+                
+                // Ponytail: Evitamos bloquear el UI Thread en discos duros lentos
+                await Task.Run(async () =>
+                {
+                    var csvContent = CsvExporter.GenerateCsv(Purchases);
+                    // BOM requerido para que Excel lea los tildes correctamente
+                    await File.WriteAllTextAsync(dialog.FileName, csvContent, Encoding.UTF8);
+                });
+
+                // No hay SuccessMessage property, agregaremos en UI de compras ms adelante si es necesario.
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error al exportar CSV: {ex.Message}";
         }
         finally
         {

@@ -1,3 +1,7 @@
+using System;
+using System.Globalization;
+using System.IO;
+using System.IO.Compression;
 using System.Windows;
 using LibroFiscal.Application;
 using LibroFiscal.Desktop.ViewModels;
@@ -51,6 +55,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<VatBooksViewModel>();
         services.AddTransient<IngestionViewModel>();
         services.AddTransient<SettingsViewModel>();
+        services.AddTransient<SalesViewModel>();
+        services.AddTransient<UsersManagementViewModel>();
         // Views
         services.AddTransient<Views.LoginView>();
         services.AddTransient<Views.CompanyView>();
@@ -60,6 +66,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<Views.PurchasesView>();
         services.AddTransient<Views.VatBooksView>();
         services.AddTransient<Views.IngestionView>();
+        services.AddTransient<Views.SalesView>();
+        services.AddTransient<Views.UsersManagementView>();
         services.AddTransient<MainWindow>();
 
         // Services
@@ -148,5 +156,55 @@ public partial class App : System.Windows.Application
         }
 
         currentMainWindow?.Close();
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        base.OnExit(e);
+
+        try
+        {
+            var databaseProvider = Configuration["DatabaseProvider"];
+            if (databaseProvider == "Sqlite")
+            {
+                var connString = Configuration.GetConnectionString("DefaultConnection");
+                if (!string.IsNullOrEmpty(connString))
+                {
+                    // Basic parsing of "Data Source=LibroFiscal.db"
+                    var parts = connString.Split(';');
+                    string dbPath = string.Empty;
+                    foreach (var part in parts)
+                    {
+                        if (part.Trim().StartsWith("Data Source", StringComparison.OrdinalIgnoreCase))
+                        {
+                            dbPath = part.Split('=')[1].Trim();
+                            break;
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(dbPath) && File.Exists(dbPath))
+                    {
+                        var backupDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "LibroFiscal_Backups");
+                        Directory.CreateDirectory(backupDir);
+
+                        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
+                        var zipPath = Path.Combine(backupDir, $"LibroFiscal_Backup_{timestamp}.zip");
+
+                        // Ponytail: Backup silencioso nativo
+                        using (var archive = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+                        {
+                            archive.CreateEntryFromFile(dbPath, Path.GetFileName(dbPath));
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Ponytail: Silent fail for backups so it doesn't crash on exit, just log it.
+            var logsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LibroFiscal", "Logs");
+            Directory.CreateDirectory(logsDir);
+            File.AppendAllText(Path.Combine(logsDir, "backup_errors.txt"), $"[{DateTime.Now}] {ex.Message}\n");
+        }
     }
 }

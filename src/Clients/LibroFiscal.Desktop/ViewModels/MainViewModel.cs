@@ -23,12 +23,17 @@ public partial class MainViewModel : ObservableObject
     private readonly VatBooksViewModel _vatBooksViewModel;
     private readonly IngestionViewModel _ingestionViewModel;
     private readonly SettingsViewModel _settingsViewModel;
+    private readonly SalesViewModel _salesViewModel;
+    private readonly UsersManagementViewModel _usersManagementViewModel;
     private readonly ICurrentUserService _currentUserService;
 
     [ObservableProperty]
     private ObservableObject _currentViewModel = null!;
 
     public string CurrentUserName => _currentUserService.Username ?? "Usuario";
+    
+    // Solo SuperAdmin (Admin) puede ver la gestión de usuarios
+    public bool IsSuperAdmin => _currentUserService.Role == "Admin";
     
     [ObservableProperty]
     private string _profilePicturePath = string.Empty;
@@ -62,6 +67,8 @@ public partial class MainViewModel : ObservableObject
         VatBooksViewModel vatBooksViewModel,
         IngestionViewModel ingestionViewModel,
         SettingsViewModel settingsViewModel,
+        SalesViewModel salesViewModel,
+        UsersManagementViewModel usersManagementViewModel,
         ICurrentUserService currentUserService)
     {
         _mediator = mediator;
@@ -76,6 +83,8 @@ public partial class MainViewModel : ObservableObject
         _vatBooksViewModel = vatBooksViewModel;
         _ingestionViewModel = ingestionViewModel;
         _settingsViewModel = settingsViewModel;
+        _salesViewModel = salesViewModel;
+        _usersManagementViewModel = usersManagementViewModel;
         _currentUserService = currentUserService;
 
         _profilePicturePath = _currentUserService.ProfilePicturePath ?? string.Empty;
@@ -155,6 +164,13 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void NavigateToSales()
+    {
+        CurrentViewModel = _salesViewModel;
+        _ = _salesViewModel.LoadSalesAsync();
+    }
+
+    [RelayCommand]
     private void NavigateToVatBooks()
     {
         CurrentViewModel = _vatBooksViewModel;
@@ -163,6 +179,15 @@ public partial class MainViewModel : ObservableObject
 
     [RelayCommand]
     private void NavigateToSettings() => CurrentViewModel = _settingsViewModel;
+
+    [RelayCommand]
+    private void NavigateToUsersManagement()
+    {
+        if (IsSuperAdmin)
+        {
+            CurrentViewModel = _usersManagementViewModel;
+        }
+    }
 
 #pragma warning disable CA1822
     [RelayCommand]

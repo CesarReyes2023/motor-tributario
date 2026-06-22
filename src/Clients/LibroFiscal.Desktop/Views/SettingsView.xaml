@@ -106,6 +106,30 @@
                     </Grid>
                 </Border>
 
+                <!-- Facturas Section -->
+                <Border Background="{DynamicResource BgHoverBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="32" Margin="0,0,0,24">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Plantilla de Factura (PDF)" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                        
+                        <TextBlock Grid.Row="1" Text="Pega aquí el código HTML/CSS que servirá como base para generar los PDFs. Usa variables como {{CustomerName}}, {{TotalAmount}}." 
+                                   FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,16" TextWrapping="Wrap"/>
+
+                        <TextBox Grid.Row="2" Text="{Binding InvoiceHtmlTemplate, UpdateSourceTrigger=PropertyChanged}" 
+                                 Height="150" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" 
+                                 FontFamily="Consolas" FontSize="12" Margin="0,0,0,24"/>
+
+                        <Button Grid.Row="3" Content="Guardar Plantilla" Command="{Binding SaveTemplateCommand}" 
+                                Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Width="200" Height="42"/>
+                    </Grid>
+                </Border>
+
                 <!-- Acciones Peligrosas -->
                 <Border Background="{DynamicResource BgHoverBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="32">
                     <Grid>
